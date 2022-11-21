@@ -103,12 +103,17 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
 	constructor( manager ) {
 		super( manager );
 		this.font = null;
-
+        this.enableLayer = false;
 	}
  
     setFont(font) {
       this.font = font;
       return this;
+    }
+
+    setEnableLayer(enableLayer) {
+        this.enableLayer = enableLayer;
+        return this;
     }
  
     load(url, onLoad, onProgress, onError) {
@@ -142,14 +147,14 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
         } else {
           console.error(error);
         }
-        scope.manager.itemError(url);
+        scope.manager.itemError(error);
       }
     }
   
     parse (text) {
       const parser = new DxfParser();
       var dxf = parser.parseSync(text);
-      return this.loadEntities(dxf, this.font);
+      return this.loadEntities(dxf, this.font, this.enableLayer);
     }
 
 
@@ -158,11 +163,12 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
      * @param {Object} font - a font loaded with THREE.FontLoader
      * @constructor
      */
-    loadEntities(data, font) {
+    loadEntities(data, font, enableLayer) {
 
         createLineTypeShaders(data);
 
         var entities = [];
+        var layers = {};
 
         // Create scene from dxf object (data)
         var i, entity, obj;
@@ -173,15 +179,28 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
 
             if (obj) {
                 entities.push(obj);
+                if (enableLayer && entity.layer) {
+                    let layerGroup = layers[entity.layer]
+                    if (!layerGroup){
+                        layerGroup = new THREE.Group();
+                        layerGroup.name = entity.layer;
+                        layers[entity.layer] = layerGroup;
+                    }
+                    layerGroup.add(obj);
+                }
             }
             obj = null;
         }
         return {
-            entities: entities,
+            entities: enableLayer ? Object.values(layers) : entities,
             dxf: data,
         };
     
 
+        /* Entity Type
+            'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
+            'LWPOLYLINE' | 'MTEXT' | 'POLYLINE' | 'SOLID' | 'SPLINE' | 'TEXT' | 'VERTEX'
+        */
         function drawEntity(entity, data) {
             var mesh;
             if (entity.type === 'CIRCLE' || entity.type === 'ARC') {
