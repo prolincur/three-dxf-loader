@@ -118,7 +118,12 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
  
     load(url, onLoad, onProgress, onError) {
       var scope = this;
-      var loader = new THREE.XHRLoader(scope.manager);
+      var loader;
+      try {
+        loader = new THREE.XHRLoader(scope.manager);
+      } catch {
+        loader = new THREE.FileLoader(scope.manager);
+      }
   
       loader.setPath(scope.path);
       // Test if it is a data-uri
