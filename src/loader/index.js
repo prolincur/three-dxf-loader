@@ -329,7 +329,7 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
                 .replaceAll('\\P', '\n')
                 .replaceAll('\\X', '\n');
 
-            textEnt.font = font;
+            textEnt.font = font.fontUrl;
             textEnt.fontSize = style.textHeight;
             textEnt.maxWidth = entity.width;
             textEnt.position.x = entity.position.x;
