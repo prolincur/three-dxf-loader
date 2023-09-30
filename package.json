@@ -7,7 +7,8 @@
   "scripts": {
     "build-dev": "webpack -c webpack.dev.js",
     "build": "webpack -c webpack.prod.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "sample": "serve"
   },
   "exports": {
     ".": {
@@ -38,7 +39,7 @@
     "webpack-merge": "^5.8.0"
   },
   "peerDependencies": {
-    "three": "0.136.0"
+    "three": "0.139.0"
   },
   "keywords": [
     "dxf",
@@ -52,6 +53,6 @@
     "@dxfom/mtext": "^0.3.2",
     "dxf-parser": "^1.1.2",
     "js-base64": "^3.7.3",
-    "troika-three-text": "^0.42.0"
+    "troika-three-text": "^0.48.0"
   }
 }

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BufferGeometry, Color, Float32BufferAttribute, Vector3 } from 'three';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { Text } from 'troika-three-text'
 import { parseDxfMTextContent } from '@dxfom/mtext';
 import { Base64 } from "js-base64";
@@ -579,7 +580,7 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
             if (!font)
                 return console.warn('Text is not supported without a Three.js font loaded with THREE.FontLoader! Load a font of your choice and pass this into the constructor. See the sample for this repository or Three.js examples at http://threejs.org/examples/?q=text#webgl_geometry_text for more details.');
 
-            geometry = new THREE.TextGeometry(entity.text, { font: font, height: 0, size: entity.textHeight || 12 });
+            geometry = new TextGeometry(entity.text, { font: font, height: 0, size: entity.textHeight || 12 });
 
             if (entity.rotation) {
                 var zRotation = entity.rotation * Math.PI / 180;
