@@ -232,11 +232,11 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
                 if (dimTypeEnum === 0) {
                     mesh = drawDimension(entity, data);
                 } else {
-                    console.log("Unsupported Dimension type: " + dimTypeEnum);
+                    console.warn("Unsupported Dimension type: " + dimTypeEnum);
                 }
             }
             else {
-                console.log("Unsupported Entity Type: " + entity.type);
+                console.warn("Unsupported Entity Type: " + entity.type);
             }
             return mesh;
         }
@@ -268,7 +268,7 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
         function drawMtext(entity, data) {
             var color = getColor(entity, data);
 
-            if (!font) { return console.log('font parameter not set. Ignoring text entity.') }
+            if (!font) { return console.warn('font parameter not set. Ignoring text entity.') }
 
             var textAndControlChars = parseDxfMTextContent(entity.text);
 
@@ -470,7 +470,7 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
             var material, lineType, vertex, startPoint, endPoint, bulgeGeometry,
                 bulge, i, line;
 
-            if (!entity.vertices) return console.log('entity missing vertices.');
+            if (!entity.vertices) return console.warn('entity missing vertices.');
 
             // create geometry
             for (i = 0; i < entity.vertices.length; i++) {

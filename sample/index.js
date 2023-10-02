@@ -40,7 +40,7 @@ function onFileSelected(evt) {
 }
 
 function abortUpload() {
-    console.log('Aborted read!')
+    console.error('Aborted read!')
 }
 
 function errorHandler(evt) {
@@ -59,8 +59,7 @@ function errorHandler(evt) {
 }
 
 function updateProgress(evt) {
-    console.log('progress');
-    console.log(Math.round((evt.loaded /evt.total) * 100));
+    console.debug('progress', Math.round((evt.loaded /evt.total) * 100));
     if(evt.lengthComputable) {
         var percentLoaded = Math.round((evt.loaded /evt.total) * 100);
         if (percentLoaded < 100) {
@@ -72,7 +71,7 @@ function updateProgress(evt) {
 
 function onSuccess(evt){
     var fileReader = evt.target;
-    if(fileReader.error) return console.log("error onloadend!?");
+    if(fileReader.error) return console.error("error onloadend!?");
     progress.style.width = '100%';
     progress.textContent = '100%';
     setTimeout(function() { $progress.classList.remove('loading'); }, 2000);
