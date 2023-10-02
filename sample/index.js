@@ -1,3 +1,6 @@
+import 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import * as ThreeDxfLoader from "three-dxf-viewer";
 
 var progress = document.getElementById('file-progress-bar');
 var $progress = document.getElementsByClassName('progress')[0];
@@ -86,12 +89,12 @@ function onSuccess(evt){
     //  and enable TextGeometry. See this example http://threejs.org/examples/?q=text#webgl_geometry_text
     //  and this discussion https://github.com/mrdoob/three.js/issues/7398 
     var font;
-    var loader = new THREE.FontLoader();
+    var loader = new FontLoader();
     var fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
     loader.load( fontUrl, function ( response ) {
         font = response;
         font.url = fontUrl
-        cadCanvas = new window.ThreeDxfLoader.Viewer(dxf, document.getElementById('cad-view'), 1000, 800, font);
+        cadCanvas = new ThreeDxfLoader.Viewer(dxf, document.getElementById('cad-view'), 1000, 800, font);
     }, null, function ( error ) {
         console.error(error);
     });

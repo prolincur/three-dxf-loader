@@ -25,7 +25,9 @@ module.exports = {
             commonjs: 'three',
             commonjs2: 'three',
             amd: 'THREE'
-        }
+        },
+        'three/examples/jsm/geometries/TextGeometry.js': 'three/examples/jsm/geometries/TextGeometry.js',
+        'three/examples/jsm/controls/OrbitControls.js': 'three/examples/jsm/controls/OrbitControls.js',
     },
     plugins: [
         new HtmlWebpackPlugin({
