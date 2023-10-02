@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { DXFLoader } from "../loader";
 
-console.log(THREE.EventDispatcher)
 /**
  * Viewer class for a dxf object.
  * @param {Object} data - the dxf object

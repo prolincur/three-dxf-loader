@@ -12,20 +12,19 @@ module.exports = {
         'three-dxf-loader': './src/loader/index.js',
         'three-dxf-viewer': './src/viewer/index.js'
     },
+    experiments: {
+        outputModule: true
+    },
     output: {
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
-        library: 'ThreeDxfLoader',
-        libraryTarget: 'umd',
-        globalObject: 'typeof self !== \'undefined\' ? self : this'
+        library: { type: "module" },
+        environment: { module: true },
+        globalObject: "this",
     },
+    externalsType: "module",
     externals: {
-        three: {
-            root: 'THREE',
-            commonjs: 'three',
-            commonjs2: 'three',
-            amd: 'THREE'
-        },
+        three: 'three',
         'three/examples/jsm/geometries/TextGeometry.js': 'three/examples/jsm/geometries/TextGeometry.js',
         'three/examples/jsm/controls/OrbitControls.js': 'three/examples/jsm/controls/OrbitControls.js',
     },
