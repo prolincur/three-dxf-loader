@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from './OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { DXFLoader } from "../loader";
 
 /**

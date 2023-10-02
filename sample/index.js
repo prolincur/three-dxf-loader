@@ -1,3 +1,6 @@
+import 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import * as ThreeDxfLoader from "three-dxf-viewer";
 
 var progress = document.getElementById('file-progress-bar');
 var $progress = document.getElementsByClassName('progress')[0];
@@ -37,7 +40,7 @@ function onFileSelected(evt) {
 }
 
 function abortUpload() {
-    console.log('Aborted read!')
+    console.error('Aborted read!')
 }
 
 function errorHandler(evt) {
@@ -56,8 +59,7 @@ function errorHandler(evt) {
 }
 
 function updateProgress(evt) {
-    console.log('progress');
-    console.log(Math.round((evt.loaded /evt.total) * 100));
+    console.debug('progress', Math.round((evt.loaded /evt.total) * 100));
     if(evt.lengthComputable) {
         var percentLoaded = Math.round((evt.loaded /evt.total) * 100);
         if (percentLoaded < 100) {
@@ -69,7 +71,7 @@ function updateProgress(evt) {
 
 function onSuccess(evt){
     var fileReader = evt.target;
-    if(fileReader.error) return console.log("error onloadend!?");
+    if(fileReader.error) return console.error("error onloadend!?");
     progress.style.width = '100%';
     progress.textContent = '100%';
     setTimeout(function() { $progress.classList.remove('loading'); }, 2000);
@@ -86,12 +88,12 @@ function onSuccess(evt){
     //  and enable TextGeometry. See this example http://threejs.org/examples/?q=text#webgl_geometry_text
     //  and this discussion https://github.com/mrdoob/three.js/issues/7398 
     var font;
-    var loader = new THREE.FontLoader();
+    var loader = new FontLoader();
     var fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
     loader.load( fontUrl, function ( response ) {
         font = response;
         font.url = fontUrl
-        cadCanvas = new window.ThreeDxfLoader.Viewer(dxf, document.getElementById('cad-view'), 1000, 800, font);
+        cadCanvas = new ThreeDxfLoader.Viewer(dxf, document.getElementById('cad-view'), 1000, 800, font);
     }, null, function ( error ) {
         console.error(error);
     });
