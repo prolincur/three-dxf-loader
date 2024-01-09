@@ -8,18 +8,18 @@ import DxfParser from "dxf-parser";
 import bSpline from './bspline';
 
 function decodeDataUri(uri) {
-  if (uri) {
-    const mime = uri.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/);
-    if (mime && mime.length > 0) {
-      const type = mime[1];
-      const data = uri.replace("data:" + type + ";", "").split(",");
-      if (data && data.length === 2 && data[0] === "base64") {
-        const byteString = data[1];
-        return Base64.decode(byteString);
-      }
+    if (uri) {
+        const mime = uri.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/);
+        if (mime && mime.length > 0) {
+            const type = mime[1];
+            const data = uri.replace("data:" + type + ";", "").split(",");
+            if (data && data.length === 2 && data[0] === "base64") {
+                const byteString = data[1];
+                return Base64.decode(byteString);
+            }
+        }
     }
-  }
-  return null;
+    return null;
 }
 
 const textControlCharactersRegex = /\\[AXQWOoLIpfH].*;/g;
@@ -100,67 +100,67 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
  * @author Sourabh Soni / https://www.prolincur.com
  */
 
- class DXFLoader extends THREE.Loader {
-	constructor( manager ) {
-		super( manager );
-		this.font = null;
+class DXFLoader extends THREE.Loader {
+    constructor(manager) {
+        super(manager);
+        this.font = null;
         this.enableLayer = false;
-	}
- 
+    }
+
     setFont(font) {
-      this.font = font;
-      return this;
+        this.font = font;
+        return this;
     }
 
     setEnableLayer(enableLayer) {
         this.enableLayer = enableLayer;
         return this;
     }
- 
+
     load(url, onLoad, onProgress, onError) {
-      var scope = this;
-      var loader;
-      try {
-        loader = new THREE.XHRLoader(scope.manager);
-      } catch {
-        loader = new THREE.FileLoader(scope.manager);
-      }
-  
-      loader.setPath(scope.path);
-      // Test if it is a data-uri
-      const text = decodeDataUri(url);
-      if (text) {
-        scope.loadString(text, onLoad, onError);
-      } else {
-        loader.load(
-          url,
-          (text) => {
-            scope.loadString(text, onLoad, onError);
-          },
-          onProgress,
-          onError
-        );
-      }
-    }
-  
-    loadString(text, onLoad, onError) {
-      var scope = this;
-      try {
-        onLoad(scope.parse(text));
-      } catch (error) {
-        if (onError) {
-          onError(error);
-        } else {
-          console.error(error);
+        var scope = this;
+        var loader;
+        try {
+            loader = new THREE.XHRLoader(scope.manager);
+        } catch {
+            loader = new THREE.FileLoader(scope.manager);
         }
-        scope.manager.itemError(error);
-      }
+
+        loader.setPath(scope.path);
+        // Test if it is a data-uri
+        const text = decodeDataUri(url);
+        if (text) {
+            scope.loadString(text, onLoad, onError);
+        } else {
+            loader.load(
+                url,
+                (text) => {
+                    scope.loadString(text, onLoad, onError);
+                },
+                onProgress,
+                onError
+            );
+        }
     }
-  
-    parse (text) {
-      const parser = new DxfParser();
-      var dxf = parser.parseSync(text);
-      return this.loadEntities(dxf, this.font, this.enableLayer);
+
+    loadString(text, onLoad, onError) {
+        var scope = this;
+        try {
+            onLoad(scope.parse(text));
+        } catch (error) {
+            if (onError) {
+                onError(error);
+            } else {
+                console.error(error);
+            }
+            scope.manager.itemError(error);
+        }
+    }
+
+    parse(text) {
+        const parser = new DxfParser();
+        var dxf = parser.parseSync(text);
+        return this.loadEntities(dxf, this.font, this.enableLayer);
     }
 
 
@@ -175,6 +175,8 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
 
         var entities = [];
         var layers = {};
+        data.faceVertices = {}
+        data.faceColors = {}
 
         // Create scene from dxf object (data)
         var i, entity, obj;
@@ -187,7 +189,7 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
                 entities.push(obj);
                 if (enableLayer && entity.layer) {
                     let layerGroup = layers[entity.layer]
-                    if (!layerGroup){
+                    if (!layerGroup) {
                         layerGroup = new THREE.Group();
                         layerGroup.name = entity.layer;
                         layers[entity.layer] = layerGroup;
@@ -197,11 +199,42 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
             }
             obj = null;
         }
+        // handle 3dfaces
+        const keys = Object.keys(data.faceVertices)
+        for (const layer of keys) {
+            const layerFaceVertices = data.faceVertices[layer]
+            const layerFaceColors = data.faceColors[layer]
+            const faceGeometry = new THREE.BufferGeometry()
+            faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(layerFaceVertices, 3))
+            faceGeometry.setAttribute('color', new THREE.Float32BufferAttribute(layerFaceColors, 3))
+            faceGeometry.computeVertexNormals()
+            const faceMaterial = new THREE.MeshLambertMaterial({
+                side: THREE.DoubleSide,
+                vertexColors: true,
+                transparent: false,
+            })
+            faceMaterial.emissive.setHex(0x2E92D4)
+            // const faceMaterial = new THREE.MeshBasicMaterial({
+            //     side: THREE.DoubleSide,
+            //     vertexColors: true,
+            // })
+            const faceObject = new THREE.Mesh(faceGeometry, faceMaterial)
+            entities.push(faceObject);
+            let layerGroup = layers[layer]
+            if (enableLayer && !layerGroup) {
+                layerGroup = new THREE.Group();
+                layerGroup.name = layer;
+                layerGroup.add(faceObject)
+                layers[layer] = layerGroup;
+            }
+        }
+        data.faceVertices = null
+        data.faceColors = null
         return {
             entities: enableLayer ? Object.values(layers) : entities,
             dxf: data,
         };
-    
+
 
         /* Entity Type
             'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
@@ -234,6 +267,8 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
                 } else {
                     console.warn("Unsupported Dimension type: " + dimTypeEnum);
                 }
+            } else if (entity.type === '3DFACE') {
+                mesh = draw3dFace(entity, data)
             }
             else {
                 console.warn("Unsupported Entity Type: " + entity.type);
@@ -422,16 +457,16 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
         }
 
         /**
-     * Interpolate a b-spline. The algorithm examins the knot vector
-     * to create segments for interpolation. The parameterisation value
-     * is re-normalised back to [0,1] as that is what the lib expects (
-     * and t i de-normalised in the b-spline library)
-     *
-     * @param controlPoints the control points
-     * @param degree the b-spline degree
-     * @param knots the knot vector
-     * @returns the polyline
-     */
+         * Interpolate a b-spline. The algorithm examins the knot vector
+         * to create segments for interpolation. The parameterisation value
+         * is re-normalised back to [0,1] as that is what the lib expects (
+         * and t i de-normalised in the b-spline library)
+         *
+         * @param controlPoints the control points
+         * @param degree the b-spline degree
+         * @param knots the knot vector
+         * @returns the polyline
+         */
         function getBSplinePolyline(controlPoints, degree, knots, interpolationsPerSplineSegment, weights) {
             const polyline = []
             const controlPointsForLib = controlPoints.map(function (p) {
@@ -773,6 +808,40 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
         //     return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } };
         // }
 
+        function draw3dFace(entity, data) {
+            let entityColor = getColor(entity, data)
+            let color = entityColor === 0x000000 ? new THREE.Color() : new THREE.Color(`#${entityColor.toString(16)}`)
+            const layer = entity.layer || 'default'
+            if (Object.keys(data.faceVertices).indexOf(layer) === -1) {
+                data.faceVertices[layer] = []
+                data.faceColors[layer] = []
+            }
+
+            for (let i = 0; i < 3; i++) {
+                data.faceVertices[layer].push(entity.vertices[i].x, entity.vertices[i].y, entity.vertices[i].z)
+                data.faceColors[layer].push(color.r, color.g, color.b)
+            }
+
+            // If there is a fourth vertex and it is different from the third vertex, create a second triangular face.
+            if (
+                entity.vertices[3] &&
+                (entity.vertices[3].x !== entity.vertices[2].x ||
+                    entity.vertices[3].y !== entity.vertices[2].y ||
+                    entity.vertices[3].z !== entity.vertices[2].z)
+            ) {
+                // need to arrange 4th point properly to make a traingle
+                for (let index = 0; index < 4; index++) {
+                    if (index === 1) continue;
+                    data.faceVertices[layer].push(
+                        entity.vertices[index].x,
+                        entity.vertices[index].y,
+                        entity.vertices[index].z
+                    )
+                    data.faceColors[layer].push(color.r, color.g, color.b)
+                }
+            }
+            return null
+        }
     }
 }
 

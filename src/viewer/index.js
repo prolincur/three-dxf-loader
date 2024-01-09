@@ -77,14 +77,14 @@ export function Viewer(data, parent, width, height, font) {
         }
     };
 
-    var camera = new THREE.OrthographicCamera(viewPort.left, viewPort.right, viewPort.top, viewPort.bottom, 1, 19);
+    var camera = new THREE.OrthographicCamera(viewPort.left, viewPort.right, viewPort.top, viewPort.bottom, 0.001, 75000);
     camera.position.z = 10;
     camera.position.x = viewPort.center.x;
     camera.position.y = viewPort.center.y;
 
     var renderer = this.renderer = new THREE.WebGLRenderer();
     renderer.setSize(width, height);
-    renderer.setClearColor(0xfffffff, 1);
+    renderer.setClearColor(0xffffff, 1);
 
     parent.appendChild(renderer.domElement);
     parent.style.display = 'block';
@@ -94,7 +94,7 @@ export function Viewer(data, parent, width, height, font) {
     controls.target.x = camera.position.x;
     controls.target.y = camera.position.y;
     controls.target.z = 0;
-    controls.zoomSpeed = 3;
+    controls.zoomSpeed = 1;
 
     //Uncomment this to disable rotation (does not make much sense with 2D drawings).
     //controls.enableRotate = false;
