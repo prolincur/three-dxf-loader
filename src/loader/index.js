@@ -213,23 +213,25 @@ class DXFLoader extends THREE.Loader {
                 vertexColors: true,
                 transparent: false,
             })
-            faceMaterial.emissive.setHex(0x2E92D4)
-            // const faceMaterial = new THREE.MeshBasicMaterial({
-            //     side: THREE.DoubleSide,
-            //     vertexColors: true,
-            // })
+            // faceMaterial.emissive.setHex(0x2E92D4) // default is black color
             const faceObject = new THREE.Mesh(faceGeometry, faceMaterial)
             entities.push(faceObject);
-            let layerGroup = layers[layer]
-            if (enableLayer && !layerGroup) {
-                layerGroup = new THREE.Group();
-                layerGroup.name = layer;
-                layerGroup.add(faceObject)
-                layers[layer] = layerGroup;
+            if (enableLayer) {
+                let layerGroup = layers[layer]
+                if (!layerGroup) {
+                    layerGroup = new THREE.Group();
+                    layerGroup.name = layer;
+                    layerGroup.add(faceObject)
+                    layers[layer] = layerGroup;
+                } else {
+                    layers[layer].add(faceObject)
+                }
             }
         }
-        data.faceVertices = null
-        data.faceColors = null
+
+        delete data.faceVertices
+        delete data.faceColors
+
         return {
             entities: enableLayer ? Object.values(layers) : entities,
             dxf: data,
