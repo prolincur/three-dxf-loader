@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import * as ThreeDxfLoader from 'three-dxf-viewer'
 
 var progress = document.getElementById('file-progress-bar')
@@ -103,7 +104,7 @@ function onSuccess(evt) {
   //  and this discussion https://github.com/mrdoob/three.js/issues/7398
   var font
   var fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
-  var loader = new THREE.FontLoader()
+  var loader = new FontLoader()
   loader?.load(
     fontUrl,
     function (response) {

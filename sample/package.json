@@ -1,6 +1,6 @@
 {
   "name": "three-dxf-sample",
-  "version": "3.5.129",
+  "version": "3.5.148",
   "description": "A demo app of three-dxf-loader",
   "scripts": {
     "start": "cd .. && serve"
@@ -12,6 +12,6 @@
   "dependencies": {
     "dxf-parser": "1.1.2",
     "jquery": "^3.2.1",
-    "three": "0.129.0"
+    "three": "0.148.0"
   }
 }
