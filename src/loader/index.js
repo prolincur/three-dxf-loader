@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { BufferGeometry, Color, Float32BufferAttribute, Vector3 } from 'three'
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import { Text } from 'troika-three-text'
 import { parseDxfMTextContent } from '@dxfom/mtext'
 import { Base64 } from 'js-base64'
@@ -170,8 +169,6 @@ class DXFLoader extends THREE.Loader {
    * @constructor
    */
   loadEntities(data, font, enableLayer) {
-
-
     /* Entity Type
             'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
             'LWPOLYLINE' | 'MTEXT' | 'POLYLINE' | 'SOLID' | 'SPLINE' | 'TEXT' | 'VERTEX'
@@ -561,7 +558,7 @@ class DXFLoader extends THREE.Loader {
           'Text is not supported without a Three.js font loaded with THREE.FontLoader! Load a font of your choice and pass this into the constructor. See the sample for this repository or Three.js examples at http://threejs.org/examples/?q=text#webgl_geometry_text for more details.'
         )
 
-      geometry = new TextGeometry(entity.text, {
+      geometry = new THREE.TextGeometry(entity.text, {
         font: font,
         height: 0,
         size: entity.textHeight || 12,
@@ -869,7 +866,7 @@ class DXFLoader extends THREE.Loader {
       entities: enableLayer ? Object.values(layers) : entities,
       dxf: data,
     }
-  }  
+  }
 }
 
 export { DXFLoader }
