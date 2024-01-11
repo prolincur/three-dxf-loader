@@ -170,71 +170,7 @@ class DXFLoader extends THREE.Loader {
    * @constructor
    */
   loadEntities(data, font, enableLayer) {
-    createLineTypeShaders(data)
 
-    var entities = []
-    var layers = {}
-    data.faceVertices = {}
-    data.faceColors = {}
-
-    // Create scene from dxf object (data)
-    var i, entity, obj
-
-    for (i = 0; i < data.entities.length; i++) {
-      entity = data.entities[i]
-      obj = drawEntity(entity, data)
-
-      if (obj) {
-        entities.push(obj)
-        if (enableLayer && entity.layer) {
-          let layerGroup = layers[entity.layer]
-          if (!layerGroup) {
-            layerGroup = new THREE.Group()
-            layerGroup.name = entity.layer
-            layers[entity.layer] = layerGroup
-          }
-          layerGroup.add(obj)
-        }
-      }
-      obj = null
-    }
-    // handle 3dfaces
-    const keys = Object.keys(data.faceVertices)
-    for (const layer of keys) {
-      const layerFaceVertices = data.faceVertices[layer]
-      const layerFaceColors = data.faceColors[layer]
-      const faceGeometry = new THREE.BufferGeometry()
-      faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(layerFaceVertices, 3))
-      faceGeometry.setAttribute('color', new THREE.Float32BufferAttribute(layerFaceColors, 3))
-      faceGeometry.computeVertexNormals()
-      const faceMaterial = new THREE.MeshLambertMaterial({
-        side: THREE.DoubleSide,
-        vertexColors: true,
-        transparent: false,
-      })
-      // faceMaterial.emissive.setHex(0x2E92D4) // default is black color
-      const faceObject = new THREE.Mesh(faceGeometry, faceMaterial)
-      entities.push(faceObject)
-      if (enableLayer) {
-        let layerGroup = layers[layer]
-        if (!layerGroup) {
-          layerGroup = new THREE.Group()
-          layerGroup.name = layer
-          layerGroup.add(faceObject)
-          layers[layer] = layerGroup
-        } else {
-          layers[layer].add(faceObject)
-        }
-      }
-    }
-
-    delete data.faceVertices
-    delete data.faceColors
-
-    return {
-      entities: enableLayer ? Object.values(layers) : entities,
-      dxf: data,
-    }
 
     /* Entity Type
             'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
@@ -864,7 +800,76 @@ class DXFLoader extends THREE.Loader {
       }
       return null
     }
-  }
+
+    // Load entities now!
+
+    createLineTypeShaders(data)
+
+    var entities = []
+    var layers = {}
+    data.faceVertices = {}
+    data.faceColors = {}
+
+    // Create scene from dxf object (data)
+    var i, entity, obj
+
+    for (i = 0; i < data.entities.length; i++) {
+      entity = data.entities[i]
+      obj = drawEntity(entity, data)
+
+      if (obj) {
+        entities.push(obj)
+        if (enableLayer && entity.layer) {
+          let layerGroup = layers[entity.layer]
+          if (!layerGroup) {
+            layerGroup = new THREE.Group()
+            layerGroup.name = entity.layer
+            layers[entity.layer] = layerGroup
+          }
+          layerGroup.add(obj)
+        }
+      }
+      obj = null
+    }
+
+    // Handle 3dfaces
+    const keys = Object.keys(data.faceVertices)
+    for (const layer of keys) {
+      const layerFaceVertices = data.faceVertices[layer]
+      const layerFaceColors = data.faceColors[layer]
+      const faceGeometry = new THREE.BufferGeometry()
+      faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(layerFaceVertices, 3))
+      faceGeometry.setAttribute('color', new THREE.Float32BufferAttribute(layerFaceColors, 3))
+      faceGeometry.computeVertexNormals()
+      const faceMaterial = new THREE.MeshLambertMaterial({
+        side: THREE.DoubleSide,
+        vertexColors: true,
+        transparent: false,
+      })
+      // faceMaterial.emissive.setHex(0x2E92D4) // default is black color
+      const faceObject = new THREE.Mesh(faceGeometry, faceMaterial)
+      entities.push(faceObject)
+      if (enableLayer) {
+        let layerGroup = layers[layer]
+        if (!layerGroup) {
+          layerGroup = new THREE.Group()
+          layerGroup.name = layer
+          layerGroup.add(faceObject)
+          layers[layer] = layerGroup
+        } else {
+          layers[layer].add(faceObject)
+        }
+      }
+    }
+
+    delete data.faceVertices
+    delete data.faceColors
+
+    return {
+      entities: enableLayer ? Object.values(layers) : entities,
+      dxf: data,
+    }
+  }  
 }
 
 export { DXFLoader }
