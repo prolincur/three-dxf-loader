@@ -7,6 +7,7 @@ var $progress = document.getElementsByClassName('progress')[0]
 
 var $cadview = document.getElementById('cad-view')
 var dxfContentEl = document.getElementById('dxf-content')
+var dxfStringCheckbox = document.getElementById("dxf-string")
 var cadCanvas
 
 // Setup the drag and drop file listeners.
@@ -86,11 +87,18 @@ function onSuccess(evt) {
   var parser = new window.DxfParser()
   var dxf = parser.parseSync(fileReader.result)
 
-  if(dxf) {
-      dxfContentEl.innerHTML = JSON.stringify(dxf, null, 2);
-  } else {
+  dxfStringCheckbox.addEventListener('change', (event) => {
+    if (!dxf) {
       dxfContentEl.innerHTML = 'No data.';
-  }
+    } else {
+      if (event.currentTarget.checked) {
+        dxfContentEl.innerHTML = JSON.stringify(dxf, null, 2);
+      } else {
+        dxfContentEl.innerHTML = "Click checkbox to see DXF string.";
+      }
+    }
+  })
+
 
   // Three.js changed the way fonts are loaded, and now we need to use FontLoader to load a font
   //  and enable TextGeometry. See this example http://threejs.org/examples/?q=text#webgl_geometry_text

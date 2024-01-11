@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2021-24 Prolincur Technologies LLP.
+ * Copyright (c) 2021-23 Prolincur Technologies LLP.
  * Copyright (c) 2015 GDS Storefront Estimating
  * All Rights Reserved.
  *
@@ -20,7 +20,7 @@ Original MIT license applies: https://github.com/fredli74/Typr.ts/blob/master/LI
 */
 
 /*!
-Custom bundle of @unicode-font-resolver/client v1.0.0 (https://github.com/lojjic/unicode-font-resolver)
+Custom bundle of @unicode-font-resolver/client v1.0.2 (https://github.com/lojjic/unicode-font-resolver)
 for use in Troika text rendering. 
 Original MIT license applies
 */
