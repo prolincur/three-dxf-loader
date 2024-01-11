@@ -22,14 +22,21 @@ export function Viewer(data, parent, width, height, font) {
 
   // Create scene from dxf object (data)
   var i, obj, min_x, min_y, min_z, max_x, max_y, max_z
-  var dims = {
-    min: { x: 0, y: 0, z: 0 },
-    max: { x: 0, y: 0, z: 0 },
+  var dims = new THREE.Box3();
+  if (entities[0]) {
+    dims.setFromObject(entities[0])
+  } else {
+    dims.min.x = 0;
+    dims.min.y = 0;
+    dims.min.z = 0;
+    dims.max.x = 0;
+    dims.max.y = 0;
+    dims.max.z = 0;
   }
-  for (i = 0; i < entities.length; i++) {
+  for (i = 1; i < entities.length; i++) {
     obj = entities[i]
     if (obj) {
-      var bbox = new THREE.Box3().setFromObject(obj)
+      var bbox = new THREE.Box3().expandByObject(obj, true)
       if (isFinite(bbox.min.x) && dims.min.x > bbox.min.x) dims.min.x = bbox.min.x
       if (isFinite(bbox.min.y) && dims.min.y > bbox.min.y) dims.min.y = bbox.min.y
       if (isFinite(bbox.min.z) && dims.min.z > bbox.min.z) dims.min.z = bbox.min.z
@@ -81,9 +88,9 @@ export function Viewer(data, parent, width, height, font) {
     viewPort.top,
     viewPort.bottom,
     0.001,
-    75000
+    750000
   )
-  camera.position.z = 10
+  camera.position.z = dims.max.z + 10
   camera.position.x = viewPort.center.x
   camera.position.y = viewPort.center.y
 
@@ -98,7 +105,7 @@ export function Viewer(data, parent, width, height, font) {
   var controls = new OrbitControls(camera, parent)
   controls.target.x = camera.position.x
   controls.target.y = camera.position.y
-  controls.target.z = 0
+  controls.target.z = dims.max.z
   controls.zoomSpeed = 1
 
   //Uncomment this to disable rotation (does not make much sense with 2D drawings).
@@ -126,7 +133,7 @@ export function Viewer(data, parent, width, height, font) {
     //        camera.updateProjectionMatrix();
 
     renderer.setSize(width, height)
-    renderer.setClearColor(0xfffffff, 1)
+    renderer.setClearColor(0xffffff, 1)
     this.render()
   }
 }
