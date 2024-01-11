@@ -10,11 +10,11 @@ export default (t, degree, points, knots, weights) => {
   const n = points.length // points count
   const d = points[0].length // point dimensionality
 
-  if ((t < 0) || (t > 1)) {
+  if (t < 0 || t > 1) {
     throw new Error('t out of bounds [0,1]: ' + t)
   }
   if (degree < 1) throw new Error('degree must be at least 1 (linear)')
-  if (degree > (n - 1)) throw new Error('degree must be less than or equal to point count - 1')
+  if (degree > n - 1) throw new Error('degree must be less than or equal to point count - 1')
 
   if (!weights) {
     // build weight vector of length [n]
@@ -34,10 +34,7 @@ export default (t, degree, points, knots, weights) => {
     if (knots.length !== n + degree + 1) throw new Error('bad knot vector length')
   }
 
-  const domain = [
-    degree,
-    knots.length - 1 - degree
-  ]
+  const domain = [degree, knots.length - 1 - degree]
 
   // remap t to the domain where the spline is defined
   const low = knots[domain[0]]

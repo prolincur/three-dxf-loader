@@ -5,3 +5,4 @@ typings/
 build/
 .vscode/
 *-error.log
+.DS_Store
