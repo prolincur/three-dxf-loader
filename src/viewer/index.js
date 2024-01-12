@@ -29,11 +29,10 @@ export function Viewer(data, parent, width, height, font) {
   dims.max.x = 0
   dims.max.y = 0
   dims.max.z = 0
-
   for (i = 0; i < entities.length; i++) {
     obj = entities[i]
     if (obj) {
-      var bbox = new THREE.Box3().setFromObject(obj)
+      var bbox = dims.expandByObject(obj, true)
       if (isFinite(bbox.min.x) && dims.min.x > bbox.min.x) dims.min.x = bbox.min.x
       if (isFinite(bbox.min.y) && dims.min.y > bbox.min.y) dims.min.y = bbox.min.y
       if (isFinite(bbox.min.z) && dims.min.z > bbox.min.z) dims.min.z = bbox.min.z
