@@ -843,7 +843,7 @@ class DXFLoader extends THREE.Loader {
         vertexColors: true,
         transparent: false,
       })
-      // faceMaterial.emissive.setHex(0x2E92D4) // default is black color
+      // faceMaterial.emissive.setHex(0x5DC228) // default is black color
       const faceObject = new THREE.Mesh(faceGeometry, faceMaterial)
       entities.push(faceObject)
       if (enableLayer) {
