@@ -22,21 +22,17 @@ export function Viewer(data, parent, width, height, font) {
 
   // Create scene from dxf object (data)
   var i, obj, min_x, min_y, min_z, max_x, max_y, max_z
-  var dims = new THREE.Box3();
-  if (entities[0]) {
-    dims.setFromObject(entities[0])
-  } else {
-    dims.min.x = 0;
-    dims.min.y = 0;
-    dims.min.z = 0;
-    dims.max.x = 0;
-    dims.max.y = 0;
-    dims.max.z = 0;
-  }
-  for (i = 1; i < entities.length; i++) {
+  var dims = new THREE.Box3()
+  dims.min.x = 0
+  dims.min.y = 0
+  dims.min.z = 0
+  dims.max.x = 0
+  dims.max.y = 0
+  dims.max.z = 0
+  for (i = 0; i < entities.length; i++) {
     obj = entities[i]
     if (obj) {
-      var bbox = new THREE.Box3().expandByObject(obj, true)
+      var bbox = dims.expandByObject(obj, true)
       if (isFinite(bbox.min.x) && dims.min.x > bbox.min.x) dims.min.x = bbox.min.x
       if (isFinite(bbox.min.y) && dims.min.y > bbox.min.y) dims.min.y = bbox.min.y
       if (isFinite(bbox.min.z) && dims.min.z > bbox.min.z) dims.min.z = bbox.min.z
