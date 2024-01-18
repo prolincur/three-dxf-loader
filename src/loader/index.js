@@ -106,6 +106,7 @@ class DXFLoader extends THREE.Loader {
     super(manager)
     this.font = null
     this.enableLayer = false
+    this.defaultColor = 0x000000
   }
 
   setFont(font) {
@@ -115,6 +116,11 @@ class DXFLoader extends THREE.Loader {
 
   setEnableLayer(enableLayer) {
     this.enableLayer = enableLayer
+    return this
+  }
+
+  setDefaultColor(color) {
+    this.defaultColor = color
     return this
   }
 
@@ -161,7 +167,7 @@ class DXFLoader extends THREE.Loader {
   parse(text) {
     const parser = new DxfParser()
     var dxf = parser.parseSync(text)
-    return this.loadEntities(dxf, this.font, this.enableLayer)
+    return this.loadEntities(dxf, this.font, this.enableLayer, this.defaultColor)
   }
 
   /**
@@ -169,7 +175,7 @@ class DXFLoader extends THREE.Loader {
    * @param {Object} font - a font loaded with THREE.FontLoader
    * @constructor
    */
-  loadEntities(data, font, enableLayer) {
+  loadEntities(data, font, enableLayer = this.enableLayer, defaultColor = this.defaultColor) {
     /* Entity Type
             'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
             'LWPOLYLINE' | 'MTEXT' | 'POLYLINE' | 'SOLID' | 'SPLINE' | 'TEXT' | 'VERTEX'
@@ -646,13 +652,14 @@ class DXFLoader extends THREE.Loader {
     }
 
     function getColor(entity, data) {
-      var color = 0x000000 //default
+      var color = null // 0x000000 //default
+
       if (entity.color) color = entity.color
       else if (data.tables && data.tables.layer && data.tables.layer.layers[entity.layer])
         color = data.tables.layer.layers[entity.layer].color
 
       if (color == null || color === 0xffffff) {
-        color = 0x000000
+        color = data.defaultColor // 0x000000
       }
       return color
     }
@@ -799,6 +806,55 @@ class DXFLoader extends THREE.Loader {
       return null
     }
 
+    function getDrawingUnit(unitVal) {
+      switch (unitVal) {
+        case 0:
+          return 'Unitless'
+        case 1:
+          return 'Inches'
+        case 2:
+          return 'Feet'
+        case 3:
+          return 'Miles'
+        case 4:
+          return 'Millimeters'
+        case 5:
+          return 'Centimeters'
+        case 6:
+          return 'Meters'
+        case 7:
+          return 'Kilometers'
+        case 8:
+          return 'Microinches'
+        case 9:
+          return 'Mils'
+        case 10:
+          return 'Yards'
+        case 11:
+          return 'Angstroms'
+        case 12:
+          return 'Nanometers'
+        case 13:
+          return 'Microns'
+        case 14:
+          return 'Decimeters'
+        case 15:
+          return 'Decameters'
+        case 16:
+          return 'Hectometers'
+        case 17:
+          return 'Gigameters'
+        case 18:
+          return 'Astronomical units'
+        case 19:
+          return 'Light years'
+        case 20:
+          return 'Parsecs'
+      }
+
+      return 'Millimeters'
+    }
+
     // Load entities now!
 
     createLineTypeShaders(data)
@@ -807,7 +863,7 @@ class DXFLoader extends THREE.Loader {
     var layers = {}
     data.faceVertices = {}
     data.faceColors = {}
-
+    data.defaultColor = defaultColor
     // Create scene from dxf object (data)
     var i, entity, obj
 
@@ -862,9 +918,22 @@ class DXFLoader extends THREE.Loader {
 
     delete data.faceVertices
     delete data.faceColors
+    delete data.defaultColor
+
+    // create single group
+    const parent = new THREE.Group()
+    if (enableLayer) {
+      Object.values(layers).forEach((layerGroup) => parent.add(layerGroup))
+    } else {
+      entities.forEach((layerGroup) => parent.add(layerGroup))
+    }
+    parent.userData = {
+      unit: getDrawingUnit(data.header['$INSUNITS']),
+      scale: data.header['$DIMLFAC'] || 1,
+    }
 
     return {
-      entities: enableLayer ? Object.values(layers) : entities,
+      entities: [parent], // enableLayer ? Object.values(layers) : entities,
       dxf: data,
     }
   }
