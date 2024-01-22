@@ -20,10 +20,11 @@ import { DXFLoader } from 'three-dxf-loader'
 const loader = new DXFLoader();
 // loader.setFont(font); // set fonts
 loader.setEnableLayer(true); // set EnableLayer
+loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
 const scene = new THREE.Scene();
 onLoad = (data) => {
-    if (data && data.entities) {
-      data.entities.forEach(ent => scene.add(ent))
+    if (data?.root) {
+      scene.add(data.root)
     }
 }
 const onError = (error) => {
