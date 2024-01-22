@@ -192,6 +192,8 @@ class DXFLoader extends THREE.Loader {
         mesh = drawLine(entity, data)
       } else if (entity.type === 'TEXT') {
         mesh = drawText(entity, data)
+      } else if (entity.type === 'MTEXT') {
+        mesh = drawMtext(entity, data)
       } else if (entity.type === 'SOLID') {
         mesh = drawSolid(entity, data)
       } else if (entity.type === 'POINT') {
@@ -200,8 +202,6 @@ class DXFLoader extends THREE.Loader {
         mesh = drawBlock(entity, data)
       } else if (entity.type === 'SPLINE') {
         mesh = drawSpline(entity, data)
-      } else if (entity.type === 'MTEXT') {
-        mesh = drawMtext(entity, data)
       } else if (entity.type === 'ELLIPSE') {
         mesh = drawEllipse(entity, data)
       } else if (entity.type === 'DIMENSION') {
@@ -216,6 +216,7 @@ class DXFLoader extends THREE.Loader {
       } else {
         console.warn('Unsupported Entity Type: ' + entity.type)
       }
+
       return mesh
     }
 
@@ -490,7 +491,6 @@ class DXFLoader extends THREE.Loader {
       }
 
       var geometry = new BufferGeometry().setFromPoints(points)
-
       line = new THREE.Line(geometry, material)
       return line
     }
@@ -852,7 +852,7 @@ class DXFLoader extends THREE.Loader {
           return 'Parsecs'
       }
 
-      return 'Millimeters'
+      return undefined
     }
 
     // Load entities now!
@@ -925,16 +925,14 @@ class DXFLoader extends THREE.Loader {
     if (enableLayer) {
       Object.values(layers).forEach((layerGroup) => parent.add(layerGroup))
     } else {
-      entities.forEach((layerGroup) => parent.add(layerGroup))
-    }
-    parent.userData = {
-      unit: getDrawingUnit(data.header['$INSUNITS']),
-      scale: data.header['$DIMLFAC'] || 1,
+      entities.forEach((entity) => parent.add(entity))
     }
 
     return {
-      entities: [parent], // enableLayer ? Object.values(layers) : entities,
+      root: parent,
       dxf: data,
+      unit: getDrawingUnit(data.header?.['$INSUNITS']),
+      scale: data.header?.['$DIMLFAC'],
     }
   }
 }
