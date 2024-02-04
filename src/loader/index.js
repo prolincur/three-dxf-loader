@@ -929,7 +929,7 @@ class DXFLoader extends THREE.Loader {
     }
 
     return {
-      root: parent,
+      entity: parent,
       dxf: data,
       unit: getDrawingUnit(data.header?.['$INSUNITS']),
       scale: data.header?.['$DIMLFAC'],
