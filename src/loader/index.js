@@ -821,7 +821,7 @@ class DXFLoader extends THREE.Loader {
         case 2:
           return 0.3048 // 'Feet'
         case 3:
-          return 1609.344  // 'Miles'
+          return 1609.344 // 'Miles'
         case 4:
           return 0.001 // 'Millimeters'
         case 5:
@@ -849,13 +849,13 @@ class DXFLoader extends THREE.Loader {
         case 16:
           return 100 // 'Hectometers'
         case 17:
-          return 1e+9 // 'Gigameters'
+          return 1e9 // 'Gigameters'
         case 18:
-          return 1.495978707e+11 //'Astronomical units' 
+          return 1.495978707e11 //'Astronomical units'
         case 19:
-          return 9.46073047808e+15 // 'Light years'
+          return 9.46073047808e15 // 'Light years'
         case 20:
-          return 3.08567758128e+16 // 'Parsecs'
+          return 3.08567758128e16 // 'Parsecs'
       }
 
       return 1
