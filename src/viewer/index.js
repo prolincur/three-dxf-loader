@@ -15,8 +15,9 @@ export function Viewer(data, parent, width, height, font) {
   var loader = new DXFLoader()
   loader.setFont(font)
   loader.setDefaultColor(0x000000)
+  loader.setConsumeUnits(true)
   // Create THREE meshes
-  var result = loader.loadEntities(data, font)
+  var result = loader.loadEntities(data)
 
   var scene = new THREE.Scene()
   scene.add(result.entity)
