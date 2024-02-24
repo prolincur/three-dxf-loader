@@ -23,8 +23,8 @@ loader.setEnableLayer(true); // set EnableLayer
 loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
 const scene = new THREE.Scene();
 onLoad = (data) => {
-    if (data?.root) {
-      scene.add(data.root)
+    if (data?.entity) {
+      scene.add(data.entity)
     }
 }
 const onError = (error) => {

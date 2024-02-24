@@ -15,16 +15,17 @@ export function Viewer(data, parent, width, height, font) {
   var loader = new DXFLoader()
   loader.setFont(font)
   loader.setDefaultColor(0x000000)
+  loader.setConsumeUnits(true)
   // Create THREE meshes
-  var entities = loader.loadEntities(data, font, true).entities
+  var result = loader.loadEntities(data)
 
   var scene = new THREE.Scene()
-  scene.add(root)
+  scene.add(result.entity)
   // Create scene from dxf object (data)
   var i, obj, min_x, min_y, min_z, max_x, max_y, max_z
 
   var dims = new THREE.Box3()
-  var bbox = dims.expandByObject(root, true)
+  var bbox = dims.expandByObject(result.entity, true)
   if (isFinite(bbox.min.x) && dims.min.x > bbox.min.x) dims.min.x = bbox.min.x
   if (isFinite(bbox.min.y) && dims.min.y > bbox.min.y) dims.min.y = bbox.min.y
   if (isFinite(bbox.min.z) && dims.min.z > bbox.min.z) dims.min.z = bbox.min.z
