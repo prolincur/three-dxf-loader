@@ -107,6 +107,7 @@ class DXFLoader extends THREE.Loader {
     this.font = null
     this.enableLayer = false
     this.defaultColor = 0x000000
+    this.enableUnitConversion = false
   }
 
   setFont(font) {
@@ -122,6 +123,10 @@ class DXFLoader extends THREE.Loader {
   setDefaultColor(color) {
     this.defaultColor = color
     return this
+  }
+
+  setConsumeUnits(enable) {
+    this.enableUnitConversion = !!enable
   }
 
   load(url, onLoad, onProgress, onError) {
@@ -167,7 +172,7 @@ class DXFLoader extends THREE.Loader {
   parse(text) {
     const parser = new DxfParser()
     var dxf = parser.parseSync(text)
-    return this.loadEntities(dxf, this.font, this.enableLayer, this.defaultColor)
+    return this.loadEntities(dxf, this)
   }
 
   /**
@@ -175,7 +180,8 @@ class DXFLoader extends THREE.Loader {
    * @param {Object} font - a font loaded with THREE.FontLoader
    * @constructor
    */
-  loadEntities(data, font, enableLayer = this.enableLayer, defaultColor = this.defaultColor) {
+  loadEntities(data, options = this) {
+    const { font, enableLayer, defaultColor, enableUnitConversion } = options || {}
     /* Entity Type
             'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
             'LWPOLYLINE' | 'MTEXT' | 'POLYLINE' | 'SOLID' | 'SPLINE' | 'TEXT' | 'VERTEX'
@@ -806,53 +812,53 @@ class DXFLoader extends THREE.Loader {
       return null
     }
 
-    function getDrawingUnit(unitVal) {
+    function getUnitToMeter(unitVal) {
       switch (unitVal) {
         case 0:
-          return 'Unitless'
+          return 1 // 'Unitless'
         case 1:
-          return 'Inches'
+          return 0.0254 // 'Inches'
         case 2:
-          return 'Feet'
+          return 0.3048 // 'Feet'
         case 3:
-          return 'Miles'
+          return 1609.344 // 'Miles'
         case 4:
-          return 'Millimeters'
+          return 0.001 // 'Millimeters'
         case 5:
-          return 'Centimeters'
+          return 0.01 // 'Centimeters'
         case 6:
-          return 'Meters'
+          return 1 // 'Meters'
         case 7:
-          return 'Kilometers'
+          return 1000 // 'Kilometers'
         case 8:
-          return 'Microinches'
+          return 2.54e-8 // 'Microinches'
         case 9:
-          return 'Mils'
+          return 2.54e-5 // 'Mils'
         case 10:
-          return 'Yards'
+          return 0.9144 // 'Yards'
         case 11:
-          return 'Angstroms'
+          return 1e-10 // 'Angstroms'
         case 12:
-          return 'Nanometers'
+          return 1e-9 // 'Nanometers'
         case 13:
-          return 'Microns'
+          return 1e-6 // 'Microns'
         case 14:
-          return 'Decimeters'
+          return 0.1 // 'Decimeters'
         case 15:
-          return 'Decameters'
+          return 10 // 'Decameters'
         case 16:
-          return 'Hectometers'
+          return 100 // 'Hectometers'
         case 17:
-          return 'Gigameters'
+          return 1e9 // 'Gigameters'
         case 18:
-          return 'Astronomical units'
+          return 1.495978707e11 //'Astronomical units'
         case 19:
-          return 'Light years'
+          return 9.46073047808e15 // 'Light years'
         case 20:
-          return 'Parsecs'
+          return 3.08567758128e16 // 'Parsecs'
       }
 
-      return undefined
+      return 1
     }
 
     // Load entities now!
@@ -927,12 +933,16 @@ class DXFLoader extends THREE.Loader {
     } else {
       entities.forEach((entity) => parent.add(entity))
     }
+    if (enableUnitConversion) {
+      const scale = data.header?.['$DIMLFAC'] || 1
+      const unitToMeter = getUnitToMeter(data.header?.['$INSUNITS'])
+      const finalScale = scale * unitToMeter
+      parent.scale.set(finalScale, finalScale, finalScale)
+    }
 
     return {
-      root: parent,
+      entity: parent,
       dxf: data,
-      unit: getDrawingUnit(data.header?.['$INSUNITS']),
-      scale: data.header?.['$DIMLFAC'],
     }
   }
 }
