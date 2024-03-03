@@ -36,6 +36,24 @@ const onProgress = (xhr) => {
 loader.load(url, onLoad, onProgress, onError);
 ```
 
+### Usage in React app
+```javascript
+import * as THREE from 'three'
+import { useLoader } from '@react-three/fiber'
+import { DXFLoader } from 'three-dxf-loader'
+
+function Scene() {
+  const data = useLoader(DXFLoader, url, (loader) => {
+    // loader.setFont(font); // set fonts
+    loader.setEnableLayer(true); // set EnableLayer
+    loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
+  })
+  return <primitive object={data?.entity} />
+}
+
+```
+
+
 #### Run Web Viewer Sample
 ![Example of the viewer](https://raw.githubusercontent.com/prolincur/three-dxf-loader/master/sample/data/snapshot.png "What the sample looks like")
 
