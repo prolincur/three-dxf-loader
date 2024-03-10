@@ -21,6 +21,7 @@ const loader = new DXFLoader();
 // loader.setFont(font); // set fonts
 loader.setEnableLayer(true); // set EnableLayer
 loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
+loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
 const scene = new THREE.Scene();
 onLoad = (data) => {
     if (data?.entity) {
@@ -75,6 +76,30 @@ Does not yet support:
 * All types of Leaders
 * MText
 * other less common objects and entities.
+
+### BREAKING CHANGES
+
+- Upgrade from 3.* to 4.*
+
+Replace following code
+
+```
+loader.load(url, (data) => {
+  const { entities } = data
+  // do something with entities
+ }, onProgress, onError);
+ ```
+
+to
+
+```
+loader.load(url, (data) => {
+  const { entity } = data
+  // do something with entity or entity.children
+
+ }, onProgress, onError);
+ ```
+
 
 ## License
 
