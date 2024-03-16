@@ -1,7 +1,7 @@
 {
   "name": "three-dxf-loader",
-  "version": "3.6.148",
-   "description": "Cross platform DXF loader for three.js. Out of the box usable with react-three-fiber.",
+  "version": "4.0.148",
+  "description": "Cross platform DXF loader for three.js. Out of the box usable with react-three-fiber.",
   "main": "dist/three-dxf-loader.js",
   "module": "src/Loader.js",
   "scripts": {
