@@ -176,6 +176,8 @@ class DXFLoader extends THREE.Loader {
         */
     function drawEntity(entity, data) {
       var mesh
+      // if(entity.layer !== "iBwave_Wall") return
+      // console.log({entity});
       if (entity.type === 'CIRCLE' || entity.type === 'ARC') {
         mesh = drawArc(entity, data)
       } else if (
@@ -455,22 +457,29 @@ class DXFLoader extends THREE.Loader {
 
       if (!entity.vertices) return console.warn('entity missing vertices.')
 
-      // create geometry
-      for (i = 0; i < entity.vertices.length; i++) {
-        if (entity.vertices[i].bulge) {
-          bulge = entity.vertices[i].bulge
-          startPoint = entity.vertices[i]
-          endPoint = i + 1 < entity.vertices.length ? entity.vertices[i + 1] : points[0]
+      // set points
+      if (entity.isPolyfaceMesh) {
+        points = decomposePolyfaceMesh(entity, data)
+      } else {
+        for (i = 0; i < entity.vertices.length; i++) {
+          if (entity.vertices[i].bulge) {
+            bulge = entity.vertices[i].bulge
+            startPoint = entity.vertices[i]
+            endPoint = i + 1 < entity.vertices.length ? entity.vertices[i + 1] : points[0]
 
-          let bulgePoints = getBulgeCurvePoints(startPoint, endPoint, bulge)
+            let bulgePoints = getBulgeCurvePoints(startPoint, endPoint, bulge)
+            console.log('inside bulge points')
+            points.push.apply(points, bulgePoints)
+          } else {
+            vertex = entity.vertices[i]
+            points.push(new THREE.Vector3(vertex.x, vertex.y, 0))
+          }
+        }
 
-          points.push.apply(points, bulgePoints)
-        } else {
-          vertex = entity.vertices[i]
-          points.push(new THREE.Vector3(vertex.x, vertex.y, 0))
+        if (entity.shape) {
+          points.push(points[0])
         }
       }
-      if (entity.shape) points.push(points[0])
 
       // set material
       if (entity.lineType) {
@@ -483,10 +492,90 @@ class DXFLoader extends THREE.Loader {
         material = new THREE.LineBasicMaterial({ linewidth: 1, color: color })
       }
 
+      // create geometry
       var geometry = new BufferGeometry().setFromPoints(points)
 
       line = new THREE.Line(geometry, material)
       return line
+    }
+
+    function decomposePolyfaceMesh(entity, data, wireframeMesh = true) {
+      const vertices = []
+      const faces = []
+      const points = []
+      for (const v of entity.vertices) {
+        if (v.faceA || v.faceB || v.faceC || v.faceD) {
+          const vFaces = [v.faceA, v.faceB, v.faceC, v.faceD]
+          const face = {
+            indices: [],
+            hiddenEdges: [],
+          }
+          for (const vIdx of vFaces) {
+            if (vIdx == 0) {
+              break
+            }
+            face.indices.push(vIdx < 0 ? -vIdx - 1 : vIdx - 1)
+            face.hiddenEdges.push(vIdx < 0)
+          }
+          if (face.indices.length == 3 || face.indices.length == 4) {
+            faces.push(face)
+          }
+        } else {
+          vertices.push(new THREE.Vector3(v.x, v.y, 0))
+        }
+      }
+
+      const polylines = []
+      const CommitLineSegment = (startIdx, endIdx) => {
+        if (polylines.length > 0) {
+          const prev = polylines[polylines.length - 1]
+          if (prev.indices[prev.indices.length - 1] == startIdx) {
+            prev.indices.push(endIdx)
+            return
+          }
+          if (prev.indices[0] == prev.indices[prev.indices.length - 1]) {
+            prev.isClosed = true
+          }
+        }
+        polylines.push({
+          indices: [startIdx, endIdx],
+          isClosed: false,
+        })
+      }
+
+      for (const face of faces) {
+        if (wireframeMesh) {
+          for (let i = 0; i < face.indices.length; i++) {
+            if (face.hiddenEdges[i]) {
+              continue
+            }
+            const nextIdx = i < face.indices.length - 1 ? i + 1 : 0
+            CommitLineSegment(face.indices[i], face.indices[nextIdx])
+          }
+        } else {
+          // filled meshes not supported
+          // let indices
+          // if (face.indices.length == 3) {
+          //     indices = face.indices
+          // } else {
+          //     indices = [face.indices[0], face.indices[1], face.indices[2],
+          //                face.indices[0], face.indices[2], face.indices[3]]
+          // }
+          // new Entity({
+          //     type: Entity.Type.TRIANGLES,
+          //     vertices, indices, layer, color
+          // })
+        }
+      }
+
+      if (wireframeMesh) {
+        for (const pl of polylines) {
+          for (const vIdx of pl.indices) {
+            points.push(vertices[vIdx])
+          }
+        }
+      }
+      return points
     }
 
     function drawArc(entity, data) {

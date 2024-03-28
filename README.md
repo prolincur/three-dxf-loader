@@ -67,6 +67,7 @@ Supports:
 * Viewport
 * Splines (Quadratic and Cubic)
 * Ellipses
+* 3DFace
  
 Does not yet support:
 * Attributes
