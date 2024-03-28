@@ -1,5 +1,4 @@
-import 'three'
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
+import * as THREE from 'three'
 import * as ThreeDxfLoader from 'three-dxf-viewer'
 
 var progress = document.getElementById('file-progress-bar')
@@ -103,9 +102,9 @@ function onSuccess(evt) {
   //  and enable TextGeometry. See this example http://threejs.org/examples/?q=text#webgl_geometry_text
   //  and this discussion https://github.com/mrdoob/three.js/issues/7398
   var font
-  var loader = new FontLoader()
   var fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
-  loader.load(
+  var loader = new THREE.FontLoader()
+  loader?.load(
     fontUrl,
     function (response) {
       font = response
