@@ -62,7 +62,7 @@ After performing the steps above, you can see the example at [http://127.0.0.1:8
 ### Supported DXF Features
 Supports:
 * Header
-* Most LW entities (lines, polylines, circles, etc)
+* Most LW entities (lines, polylines, circles, polyfaces etc)
 * Layers
 * Some support for line types
 * Simple Text

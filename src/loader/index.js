@@ -535,7 +535,7 @@ class DXFLoader extends THREE.Loader {
       }
 
       const polylines = []
-      const CommitLineSegment = (startIdx, endIdx) => {
+      const addLineSegment = (startIdx, endIdx) => {
         if (polylines.length > 0) {
           const prev = polylines[polylines.length - 1]
           if (prev.indices[prev.indices.length - 1] == startIdx) {
@@ -559,7 +559,7 @@ class DXFLoader extends THREE.Loader {
               continue
             }
             const nextIdx = i < face.indices.length - 1 ? i + 1 : 0
-            CommitLineSegment(face.indices[i], face.indices[nextIdx])
+            addLineSegment(face.indices[i], face.indices[nextIdx])
           }
         } else {
           // filled meshes not supported
