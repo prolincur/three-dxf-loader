@@ -176,8 +176,6 @@ class DXFLoader extends THREE.Loader {
         */
     function drawEntity(entity, data) {
       var mesh
-      // if(entity.layer !== "iBwave_Wall") return
-      // console.log({entity});
       if (entity.type === 'CIRCLE' || entity.type === 'ARC') {
         mesh = drawArc(entity, data)
       } else if (
@@ -468,7 +466,6 @@ class DXFLoader extends THREE.Loader {
             endPoint = i + 1 < entity.vertices.length ? entity.vertices[i + 1] : points[0]
 
             let bulgePoints = getBulgeCurvePoints(startPoint, endPoint, bulge)
-            console.log('inside bulge points')
             points.push.apply(points, bulgePoints)
           } else {
             vertex = entity.vertices[i]
