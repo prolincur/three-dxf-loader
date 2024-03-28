@@ -106,6 +106,8 @@ class DXFLoader extends THREE.Loader {
     super(manager)
     this.font = null
     this.enableLayer = false
+    this.defaultColor = 0x000000
+    this.enableUnitConversion = false
   }
 
   setFont(font) {
@@ -116,6 +118,15 @@ class DXFLoader extends THREE.Loader {
   setEnableLayer(enableLayer) {
     this.enableLayer = enableLayer
     return this
+  }
+
+  setDefaultColor(color) {
+    this.defaultColor = color
+    return this
+  }
+
+  setConsumeUnits(enable) {
+    this.enableUnitConversion = !!enable
   }
 
   load(url, onLoad, onProgress, onError) {
@@ -161,7 +172,7 @@ class DXFLoader extends THREE.Loader {
   parse(text) {
     const parser = new DxfParser()
     var dxf = parser.parseSync(text)
-    return this.loadEntities(dxf, this.font, this.enableLayer)
+    return this.loadEntities(dxf, this)
   }
 
   /**
@@ -169,7 +180,8 @@ class DXFLoader extends THREE.Loader {
    * @param {Object} font - a font loaded with THREE.FontLoader
    * @constructor
    */
-  loadEntities(data, font, enableLayer) {
+  loadEntities(data, options = this) {
+    const { font, enableLayer, defaultColor, enableUnitConversion } = options || {}
     /* Entity Type
             'POINT' | '3DFACE' | 'ARC' | 'ATTDEF' | 'CIRCLE' | 'DIMENSION' | 'MULTILEADER' | 'ELLIPSE' | 'INSERT' | 'LINE' | 
             'LWPOLYLINE' | 'MTEXT' | 'POLYLINE' | 'SOLID' | 'SPLINE' | 'TEXT' | 'VERTEX'
@@ -186,6 +198,8 @@ class DXFLoader extends THREE.Loader {
         mesh = drawLine(entity, data)
       } else if (entity.type === 'TEXT') {
         mesh = drawText(entity, data)
+      } else if (entity.type === 'MTEXT') {
+        mesh = drawMtext(entity, data)
       } else if (entity.type === 'SOLID') {
         mesh = drawSolid(entity, data)
       } else if (entity.type === 'POINT') {
@@ -194,8 +208,6 @@ class DXFLoader extends THREE.Loader {
         mesh = drawBlock(entity, data)
       } else if (entity.type === 'SPLINE') {
         mesh = drawSpline(entity, data)
-      } else if (entity.type === 'MTEXT') {
-        mesh = drawMtext(entity, data)
       } else if (entity.type === 'ELLIPSE') {
         mesh = drawEllipse(entity, data)
       } else if (entity.type === 'DIMENSION') {
@@ -210,6 +222,7 @@ class DXFLoader extends THREE.Loader {
       } else {
         console.warn('Unsupported Entity Type: ' + entity.type)
       }
+
       return mesh
     }
 
@@ -491,7 +504,6 @@ class DXFLoader extends THREE.Loader {
 
       // create geometry
       var geometry = new BufferGeometry().setFromPoints(points)
-
       line = new THREE.Line(geometry, material)
       return line
     }
@@ -732,13 +744,14 @@ class DXFLoader extends THREE.Loader {
     }
 
     function getColor(entity, data) {
-      var color = 0x000000 //default
+      var color = null // 0x000000 //default
+
       if (entity.color) color = entity.color
       else if (data.tables && data.tables.layer && data.tables.layer.layers[entity.layer])
         color = data.tables.layer.layers[entity.layer].color
 
       if (color == null || color === 0xffffff) {
-        color = 0x000000
+        color = data.defaultColor // 0x000000
       }
       return color
     }
@@ -885,6 +898,55 @@ class DXFLoader extends THREE.Loader {
       return null
     }
 
+    function getUnitToMeter(unitVal) {
+      switch (unitVal) {
+        case 0:
+          return 1 // 'Unitless'
+        case 1:
+          return 0.0254 // 'Inches'
+        case 2:
+          return 0.3048 // 'Feet'
+        case 3:
+          return 1609.344 // 'Miles'
+        case 4:
+          return 0.001 // 'Millimeters'
+        case 5:
+          return 0.01 // 'Centimeters'
+        case 6:
+          return 1 // 'Meters'
+        case 7:
+          return 1000 // 'Kilometers'
+        case 8:
+          return 2.54e-8 // 'Microinches'
+        case 9:
+          return 2.54e-5 // 'Mils'
+        case 10:
+          return 0.9144 // 'Yards'
+        case 11:
+          return 1e-10 // 'Angstroms'
+        case 12:
+          return 1e-9 // 'Nanometers'
+        case 13:
+          return 1e-6 // 'Microns'
+        case 14:
+          return 0.1 // 'Decimeters'
+        case 15:
+          return 10 // 'Decameters'
+        case 16:
+          return 100 // 'Hectometers'
+        case 17:
+          return 1e9 // 'Gigameters'
+        case 18:
+          return 1.495978707e11 //'Astronomical units'
+        case 19:
+          return 9.46073047808e15 // 'Light years'
+        case 20:
+          return 3.08567758128e16 // 'Parsecs'
+      }
+
+      return 1
+    }
+
     // Load entities now!
 
     createLineTypeShaders(data)
@@ -893,7 +955,7 @@ class DXFLoader extends THREE.Loader {
     var layers = {}
     data.faceVertices = {}
     data.faceColors = {}
-
+    data.defaultColor = defaultColor
     // Create scene from dxf object (data)
     var i, entity, obj
 
@@ -948,9 +1010,24 @@ class DXFLoader extends THREE.Loader {
 
     delete data.faceVertices
     delete data.faceColors
+    delete data.defaultColor
+
+    // create single group
+    const parent = new THREE.Group()
+    if (enableLayer) {
+      Object.values(layers).forEach((layerGroup) => parent.add(layerGroup))
+    } else {
+      entities.forEach((entity) => parent.add(entity))
+    }
+    if (enableUnitConversion) {
+      const scale = data.header?.['$DIMLFAC'] || 1
+      const unitToMeter = getUnitToMeter(data.header?.['$INSUNITS'])
+      const finalScale = scale * unitToMeter
+      parent.scale.set(finalScale, finalScale, finalScale)
+    }
 
     return {
-      entities: enableLayer ? Object.values(layers) : entities,
+      entity: parent,
       dxf: data,
     }
   }

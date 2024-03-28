@@ -14,35 +14,24 @@ import { DXFLoader } from '../loader'
 export function Viewer(data, parent, width, height, font) {
   var loader = new DXFLoader()
   loader.setFont(font)
-
+  loader.setDefaultColor(0x000000)
+  loader.setConsumeUnits(true)
   // Create THREE meshes
-  var entities = loader.loadEntities(data, font).entities
+  var result = loader.loadEntities(data)
 
   var scene = new THREE.Scene()
-
+  scene.add(result.entity)
   // Create scene from dxf object (data)
   var i, obj, min_x, min_y, min_z, max_x, max_y, max_z
+
   var dims = new THREE.Box3()
-  dims.min.x = 0
-  dims.min.y = 0
-  dims.min.z = 0
-  dims.max.x = 0
-  dims.max.y = 0
-  dims.max.z = 0
-  for (i = 0; i < entities.length; i++) {
-    obj = entities[i]
-    if (obj) {
-      var bbox = dims.expandByObject(obj, true)
-      if (isFinite(bbox.min.x) && dims.min.x > bbox.min.x) dims.min.x = bbox.min.x
-      if (isFinite(bbox.min.y) && dims.min.y > bbox.min.y) dims.min.y = bbox.min.y
-      if (isFinite(bbox.min.z) && dims.min.z > bbox.min.z) dims.min.z = bbox.min.z
-      if (isFinite(bbox.max.x) && dims.max.x < bbox.max.x) dims.max.x = bbox.max.x
-      if (isFinite(bbox.max.y) && dims.max.y < bbox.max.y) dims.max.y = bbox.max.y
-      if (isFinite(bbox.max.z) && dims.max.z < bbox.max.z) dims.max.z = bbox.max.z
-      scene.add(obj)
-    }
-    obj = null
-  }
+  var bbox = dims.expandByObject(result.entity, true)
+  if (isFinite(bbox.min.x) && dims.min.x > bbox.min.x) dims.min.x = bbox.min.x
+  if (isFinite(bbox.min.y) && dims.min.y > bbox.min.y) dims.min.y = bbox.min.y
+  if (isFinite(bbox.min.z) && dims.min.z > bbox.min.z) dims.min.z = bbox.min.z
+  if (isFinite(bbox.max.x) && dims.max.x < bbox.max.x) dims.max.x = bbox.max.x
+  if (isFinite(bbox.max.y) && dims.max.y < bbox.max.y) dims.max.y = bbox.max.y
+  if (isFinite(bbox.max.z) && dims.max.z < bbox.max.z) dims.max.z = bbox.max.z
 
   width = width || parent.clientWidth
   height = height || parent.clientHeight
