@@ -14,27 +14,31 @@ npm i three-dxf-loader three
 
 #### Usage
 ```javascript
-import * as THREE from 'three'
-import { DXFLoader } from 'three-dxf-loader'
+import * as THREE from 'three';
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
+import { DXFLoader } from 'three-dxf-loader';
 
-const loader = new DXFLoader();
-// loader.setFont(font); // set fonts
-loader.setEnableLayer(true); // set EnableLayer
-loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
-loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
-const scene = new THREE.Scene();
-onLoad = (data) => {
-    if (data?.entity) {
-      scene.add(data.entity)
-    }
-}
-const onError = (error) => {
-  console.log(error);
-}
-const onProgress = (xhr) => {
-  console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-}
-loader.load(url, onLoad, onProgress, onError);
+const fontLoader = new FontLoader();
+fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+  const loader = new DXFLoader();
+  loader.setFont(font); // set fonts
+  loader.setEnableLayer(true); // set EnableLayer
+  loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
+  loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
+  const scene = new THREE.Scene();
+  onLoad = (data) => {
+      if (data?.entity) {
+        scene.add(data.entity)
+      }
+  }
+  const onError = (error) => {
+    console.log(error);
+  }
+  const onProgress = (xhr) => {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  }
+  loader.load(url, onLoad, onProgress, onError);
+});
 ```
 
 #### Run Web Viewer Sample
