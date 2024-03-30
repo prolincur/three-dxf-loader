@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { DXFLoader } from '../loader'
-import { ensureThreeClass } from '../loader/util'
+import THREEx from '../loader/extend'
 
 /**
  * Viewer class for a dxf object.
@@ -174,4 +174,4 @@ function hide(el) {
   showHide(el)
 }
 
-export { Viewer, ensureThreeClass }
+export { Viewer, THREEx }

@@ -5,11 +5,10 @@ import { parseDxfMTextContent } from '@dxfom/mtext'
 import { Base64 } from 'js-base64'
 import DxfParser from 'dxf-parser'
 import bSpline from './bspline'
-import { ensureThreeClass } from './util'
+import ThreeEx from './extend'
 
 // Three.js extension functions. Webpack doesn't seem to like it if we modify the THREE object directly.
 const THREEx = { Math: {} }
-ensureThreeClass(THREEx, 'three/examples/jsm/geometries/TextGeometry.js', 'TextGeometry')
 
 function decodeDataUri(uri) {
   if (uri) {
@@ -658,11 +657,11 @@ class DXFLoader extends THREE.Loader {
         return console.warn(
           'Text is not supported without a Three.js font loaded with THREE.FontLoader! Load a font of your choice and pass this into the constructor. See the sample for this repository or Three.js examples at http://threejs.org/examples/?q=text#webgl_geometry_text for more details.'
         )
-      if (!THREEx.TextGeometry) {
+      if (!ThreeEx.TextGeometry) {
         return console.warn('Text is not supported without TextGeometry')
       }
 
-      geometry = new THREEx.TextGeometry(entity.text, {
+      geometry = new ThreeEx.TextGeometry(entity.text, {
         font: font,
         height: 0,
         size: entity.textHeight || 12,
@@ -1038,4 +1037,4 @@ class DXFLoader extends THREE.Loader {
   }
 }
 
-export { DXFLoader, ensureThreeClass }
+export { DXFLoader, ThreeEx as THREEx }
