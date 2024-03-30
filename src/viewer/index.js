@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { DXFLoader } from '../loader'
+import { ensureThreeClass } from '../loader/util'
 
 /**
  * Viewer class for a dxf object.
@@ -11,7 +12,7 @@ import { DXFLoader } from '../loader'
  * @param {Object} font - a font loaded with THREE.FontLoader
  * @constructor
  */
-export function Viewer(data, parent, width, height, font) {
+function Viewer(data, parent, width, height, font) {
   var loader = new DXFLoader()
   loader.setFont(font)
   loader.setDefaultColor(0x000000)
@@ -172,3 +173,5 @@ function show(el) {
 function hide(el) {
   showHide(el)
 }
+
+export { Viewer, ensureThreeClass }
