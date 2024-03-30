@@ -51,6 +51,7 @@ function Scene() {
   const data = useLoader(DXFLoader, url, (loader) => {
     // loader.setFont(font); // set fonts
     loader.setEnableLayer(true); // set EnableLayer
+    loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
     loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
   })
   return <primitive object={data?.entity} />
