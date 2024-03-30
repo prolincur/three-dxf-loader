@@ -1,17 +1,15 @@
 import 'three'
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import * as ThreeDxfLoader from 'three-dxf-viewer'
 
-var progress = document.getElementById('file-progress-bar')
-var $progress = document.getElementsByClassName('progress')[0]
+const progress = document.getElementById('file-progress-bar')
+const $progress = document.getElementsByClassName('progress')[0]
 
-var $cadview = document.getElementById('cad-view')
-var dxfContentEl = document.getElementById('dxf-content')
-var dxfStringCheckbox = document.getElementById('dxf-string')
-var cadCanvas
+const $cadview = document.getElementById('cad-view')
+const dxfContentEl = document.getElementById('dxf-content')
+const dxfStringCheckbox = document.getElementById('dxf-string')
 
 // Setup the drag and drop file listeners.
-// var dropZone = document.getElementById('drop-zone');
+// const dropZone = document.getElementById('drop-zone');
 // dropZone.addEventListener('dragover', handleDragOver, false);
 // dropZone.addEventListener('drop', onFileSelected, false);
 
@@ -21,8 +19,8 @@ function onFileSelected(evt) {
   progress.style.width = '0%'
   progress.textContent = '0%'
 
-  var file = evt.target.files[0]
-  var output = []
+  const file = evt.target.files[0]
+  const output = []
   output.push(
     '<li><strong>',
     encodeURI(file.name),
@@ -38,7 +36,7 @@ function onFileSelected(evt) {
 
   $progress.classList.add('loading')
 
-  var reader = new FileReader()
+  const reader = new FileReader()
   reader.onprogress = updateProgress
   reader.onloadend = onSuccess
   reader.onabort = abortUpload
@@ -68,7 +66,7 @@ function errorHandler(evt) {
 function updateProgress(evt) {
   console.debug('progress', Math.round((evt.loaded / evt.total) * 100))
   if (evt.lengthComputable) {
-    var percentLoaded = Math.round((evt.loaded / evt.total) * 100)
+    const percentLoaded = Math.round((evt.loaded / evt.total) * 100)
     if (percentLoaded < 100) {
       progress.style.width = percentLoaded + '%'
       progress.textContent = percentLoaded + '%'
@@ -77,15 +75,15 @@ function updateProgress(evt) {
 }
 
 function onSuccess(evt) {
-  var fileReader = evt.target
+  const fileReader = evt.target
   if (fileReader.error) return console.error('error onloadend!?')
   progress.style.width = '100%'
   progress.textContent = '100%'
   setTimeout(function () {
     $progress.classList.remove('loading')
   }, 2000)
-  var parser = new window.DxfParser()
-  var dxf = parser.parseSync(fileReader.result)
+  const parser = new window.DxfParser()
+  const dxf = parser.parseSync(fileReader.result)
 
   dxfStringCheckbox.addEventListener('change', (event) => {
     if (!dxf) {
@@ -102,15 +100,15 @@ function onSuccess(evt) {
   // Three.js changed the way fonts are loaded, and now we need to use FontLoader to load a font
   //  and enable TextGeometry. See this example http://threejs.org/examples/?q=text#webgl_geometry_text
   //  and this discussion https://github.com/mrdoob/three.js/issues/7398
-  var font
-  var loader = new FontLoader()
-  var fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
+  let font
+  const loader = new ThreeDxfLoader.THREEx.FontLoader()
+  const fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
   loader.load(
     fontUrl,
     function (response) {
       font = response
       font.url = fontUrl
-      cadCanvas = new ThreeDxfLoader.Viewer(
+      const cadCanvas = new ThreeDxfLoader.Viewer(
         dxf,
         document.getElementById('cad-view'),
         1000,
