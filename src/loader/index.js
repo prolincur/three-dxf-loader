@@ -315,6 +315,8 @@ class DXFLoader extends THREE.Loader {
 
       let textEnt = new Text()
       textEnt.text = text.replaceAll('\\P', '\n').replaceAll('\\X', '\n')
+      textEnt.isMText = true
+      textEnt.isText = true
 
       textEnt.font = font.fontUrl
       textEnt.fontSize = style.textHeight
@@ -331,6 +333,8 @@ class DXFLoader extends THREE.Loader {
         var dv = entity.directionVector
         textEnt.rotation.z = new THREE.Vector3(1, 0, 0).angleTo(new THREE.Vector3(dv.x, dv.y, dv.z))
       }
+      textEnt.orientationZ = textEnt.rotation.z * 180 / Math.PI
+
       switch (entity.attachmentPoint) {
         case 1:
           // Top Left
@@ -672,13 +676,19 @@ class DXFLoader extends THREE.Loader {
         geometry.rotateZ(zRotation)
       }
 
-      material = new THREE.MeshBasicMaterial({ color: getColor(entity, data) })
+      const color = getColor(entity, data)
+      material = new THREE.MeshBasicMaterial({ color })
 
       text = new THREE.Mesh(geometry, material)
       text.position.x = entity.startPoint.x
       text.position.y = entity.startPoint.y
       text.position.z = entity.startPoint.z
 
+      text.text = entity.text
+      text.isText = true
+      text.fontSize = entity.textHeight
+      text.orientationZ = entity.rotation
+      text.color = color
       return text
     }
 
