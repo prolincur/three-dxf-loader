@@ -1,6 +1,6 @@
 {
   "name": "three-dxf-sample",
-  "version": "4.1.160",
+  "version": "5.0.0",
   "description": "A demo app of three-dxf-loader",
   "scripts": {
     "start": "cd .. && serve"
