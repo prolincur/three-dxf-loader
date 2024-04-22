@@ -333,7 +333,7 @@ class DXFLoader extends THREE.Loader {
         var dv = entity.directionVector
         textEnt.rotation.z = new THREE.Vector3(1, 0, 0).angleTo(new THREE.Vector3(dv.x, dv.y, dv.z))
       }
-      textEnt.orientationZ = textEnt.rotation.z * 180 / Math.PI
+      textEnt.orientationZ = (textEnt.rotation.z * 180) / Math.PI
 
       switch (entity.attachmentPoint) {
         case 1:
