@@ -1,17 +1,22 @@
 /*
- * Copyright (c) 2020-22 Prolincur Technologies LLP.
+ * Copyright (c) 2020-24 Prolincur Technologies LLP.
  * All Rights Reserved.
  */
 
 import webpack from 'webpack'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
+import nodeExternals from 'webpack-node-externals'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const webpackEnv = process.env.NODE_ENV || 'production'
+const isDev = webpackEnv === 'development'
 
 const config = {
+  mode: webpackEnv,
+  devtool: isDev ? 'inline-source-map' : undefined,
   entry: {
     'three-dxf-loader': './src/loader/index.js',
     'three-dxf-viewer': './src/viewer/index.js',
@@ -21,18 +26,17 @@ const config = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dist'),
+    // path: path.resolve(__dirname, 'dist'),
     library: { type: 'module' },
     environment: { module: true },
     globalObject: 'this',
   },
   externalsType: 'module',
-  externals: {
-    three: 'three',
-    'three/examples/jsm/geometries/TextGeometry.js':
-      'three/examples/jsm/geometries/TextGeometry.js',
-    'three/examples/jsm/controls/OrbitControls.js': 'three/examples/jsm/controls/OrbitControls.js',
-  },
+  externals: [
+    'three',
+    'three/examples/jsm/geometries/TextGeometry.js',
+    'three/examples/jsm/controls/OrbitControls.js'
+  ],
   module: {
     rules: [
       {
@@ -48,9 +52,6 @@ const config = {
     ],
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Production',
-    }),
     new webpack.BannerPlugin(
       'Copyright (c) 2021-24 Prolincur Technologies LLP.\nCopyright (c) 2015 GDS Storefront Estimating\nAll Rights Reserved.\n\n' +
         'Please check the provided LICENSE file for licensing details.\n' +
@@ -65,4 +66,36 @@ const config = {
   ],
 }
 
-export default config
+const nodeConfig = {
+  ...config,
+  target: 'node',
+  externals: [
+    ...config.externals,
+    nodeExternals()
+  ],
+  output: {
+    ...config.output,
+    path: path.resolve(__dirname, 'dist/node'),
+    chunkFormat: 'module',
+  }
+}
+
+const browserConfig = {
+  ...config,
+  target: 'web',
+  output: {
+    ...config.output,
+    // path: path.resolve(__dirname, 'dist/browser'),
+    path: path.resolve(__dirname, 'dist'),
+  },
+  plugins: [
+    ...config.plugins,
+    new HtmlWebpackPlugin({
+      title: 'Production',
+    }),
+  ]
+}
+
+
+// export default [nodeConfig, browserConfig]
+export default [browserConfig]
