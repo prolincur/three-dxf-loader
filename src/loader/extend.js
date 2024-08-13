@@ -5,16 +5,18 @@ import * as THREE from 'three'
 const THREEx = {}
 
 function load() {
-  if (THREE.FontLoader) {
-    THREEx.FontLoader = THREE.FontLoader
+  const key1 = 'FontLoader'
+  if (THREE[key1]) {
+    THREEx.FontLoader = THREE[key1]
   } else {
     import(/* webpackIgnore: true */ 'three/examples/jsm/loaders/FontLoader.js')
       .then((module) => (THREEx.FontLoader = module.FontLoader))
       .catch((error) => console.error(error))
   }
 
-  if (THREE.TextGeometry) {
-    THREEx.TextGeometry = THREE.TextGeometry
+  const key2 = 'TextGeometry'
+  if (THREE[key2]) {
+    THREEx.TextGeometry = THREE[key2]
   } else {
     import(/* webpackIgnore: true */ 'three/examples/jsm/geometries/TextGeometry.js')
       .then((module) => (THREEx.TextGeometry = module.TextGeometry))
