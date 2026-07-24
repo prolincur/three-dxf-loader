@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-present Prolincur Technologies LLP.
+ * All Rights Reserved.
+ */
+
 import 'three'
 import * as ThreeDxfLoader from 'three-dxf-viewer'
 import { DXFLoader } from 'three-dxf-loader'

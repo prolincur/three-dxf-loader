@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-present Prolincur Technologies LLP.
+ * All Rights Reserved.
+ */
+
 import * as THREE from 'three'
 
 // This method is used to ensure backward compatability with older version of threejs
