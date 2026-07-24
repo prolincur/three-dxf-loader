@@ -1,9 +1,9 @@
 {
-  "name": "three-dxf-sample",
+  "name": "three-dxf-example-web",
   "version": "5.4.0",
   "description": "A demo app of three-dxf-loader",
   "scripts": {
-    "start": "cd .. && serve"
+    "start": "cd ../.. && serve"
   },
   "license": "MIT",
   "devDependencies": {

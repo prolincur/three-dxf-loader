@@ -9,10 +9,10 @@
     "build-dev": "cross-env NODE_ENV=development webpack -c webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack -c webpack.config.js",
     "prepublishOnly": "pnpm build",
-    "start": "pnpm install && pnpm build && cd sample && pnpm install && pnpm start",
-    "start-dev": "pnpm install && pnpm build-dev && cd sample && pnpm install && pnpm start",
+    "start": "pnpm install && pnpm build && cd examples/web && pnpm install && pnpm start",
+    "start-dev": "pnpm install && pnpm build-dev && cd examples/web && pnpm install && pnpm start",
     "lint": "eslint src --ext js --report-unused-disable-directives --max-warnings 0",
-    "prettier": "prettier src/**/*.js --write && prettier sample/*.js --write"
+    "prettier": "prettier src/**/*.js --write && prettier examples/web/*.js --write"
   },
   "exports": {
     ".": {
