@@ -132,12 +132,7 @@ class DXFLoader extends THREE.Loader {
 
   load(url, onLoad, onProgress, onError) {
     const scope = this
-    let loader
-    try {
-      loader = new THREE.XHRLoader(scope.manager)
-    } catch {
-      loader = new THREE.FileLoader(scope.manager)
-    }
+    const loader = new THREE.FileLoader(scope.manager)
 
     loader.setPath(scope.path)
     // Test if it is a data-uri
