@@ -14,28 +14,51 @@ npm i three-dxf-loader three
 
 #### Usage
 ```javascript
+import * as THREE from 'three';
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
+import { DXFLoader } from 'three-dxf-loader';
+
+const fontLoader = new FontLoader();
+fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+  const loader = new DXFLoader();
+  loader.setFont(font); // set fonts
+  loader.setEnableLayer(true); // set EnableLayer
+  loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
+  loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
+  const scene = new THREE.Scene();
+  onLoad = (data) => {
+      if (data?.entity) {
+        scene.add(data.entity)
+      }
+  }
+  const onError = (error) => {
+    console.log(error);
+  }
+  const onProgress = (xhr) => {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+  }
+  loader.load(url, onLoad, onProgress, onError);
+});
+```
+
+### Usage in React app
+```javascript
 import * as THREE from 'three'
+import { useLoader } from '@react-three/fiber'
 import { DXFLoader } from 'three-dxf-loader'
 
-const loader = new DXFLoader();
-// loader.setFont(font); // set fonts
-loader.setEnableLayer(true); // set EnableLayer
-loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
-loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
-const scene = new THREE.Scene();
-onLoad = (data) => {
-    if (data?.entity) {
-      scene.add(data.entity)
-    }
+function Scene() {
+  const data = useLoader(DXFLoader, url, (loader) => {
+    // loader.setFont(font); // set fonts
+    loader.setEnableLayer(true); // set EnableLayer
+    loader.setConsumeUnits(true); // consume units coming from DXF and scale the model to 'meter'
+    loader.setDefaultColor(0x000000); // set DefaultColor : Default color will be applied when no color found for the entity
+  })
+  return <primitive object={data?.entity} />
 }
-const onError = (error) => {
-  console.log(error);
-}
-const onProgress = (xhr) => {
-  console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-}
-loader.load(url, onLoad, onProgress, onError);
+
 ```
+
 
 #### Run Web Viewer Sample
 ![Example of the viewer](https://raw.githubusercontent.com/prolincur/three-dxf-loader/master/sample/data/snapshot.png "What the sample looks like")
