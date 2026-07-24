@@ -763,7 +763,7 @@ class DXFLoader extends THREE.Loader {
       else if (data.tables && data.tables.layer && data.tables.layer.layers[entity.layer])
         color = data.tables.layer.layers[entity.layer].color
 
-      if (color == null || color === 0xffffff) {
+      if (color == null) {
         color = data.defaultColor // 0x000000
       }
       return color
@@ -874,7 +874,7 @@ class DXFLoader extends THREE.Loader {
       let color =
         entityColor === 0x000000
           ? new THREE.Color()
-          : new THREE.Color(`#${entityColor.toString(16)}`)
+          : new THREE.Color(`#${entityColor.toString(16).padStart(6, '0')}`)
       const layer = entity.layer || 'default'
       if (Object.keys(data.faceVertices).indexOf(layer) === -1) {
         data.faceVertices[layer] = []
