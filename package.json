@@ -11,8 +11,8 @@
     "prepublishOnly": "pnpm build",
     "start-web": "pnpm install && pnpm build && cd examples/web && pnpm install && pnpm start",
     "start-r3f": "pnpm install && pnpm build && cd examples/r3f && pnpm install && pnpm start",
-    "lint": "eslint src --ext js --report-unused-disable-directives --max-warnings 0",
-    "prettier": "prettier src/**/*.js --write && prettier examples/web/*.js --write"
+    "lint": "eslint src examples/web --ext js --report-unused-disable-directives --max-warnings 0",
+    "prettier": "prettier src/**/*.js --write && prettier examples/web/*.js --write && prettier examples/r3f/src/*.js --write"
   },
   "exports": {
     ".": {
