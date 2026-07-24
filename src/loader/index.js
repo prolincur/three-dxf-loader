@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-present Prolincur Technologies LLP.
+ * All Rights Reserved.
+ */
+
 import * as THREE from 'three'
 import { BufferGeometry, Color, Float32BufferAttribute, Vector3 } from 'three'
 import { Text } from 'troika-three-text'
@@ -11,18 +16,13 @@ import ThreeEx from './extend'
 const THREEx = { Math: {} }
 
 function decodeDataUri(uri) {
-  if (uri) {
-    const mime = uri.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)
-    if (mime && mime.length > 0) {
-      const type = mime[1]
-      const data = uri.replace('data:' + type + ';', '').split(',')
-      if (data && data.length === 2 && data[0] === 'base64') {
-        const byteString = data[1]
-        return Base64.decode(byteString)
-      }
-    }
-  }
-  return null
+  if (!uri || !uri.startsWith('data:')) return null
+  const commaIndex = uri.indexOf(',')
+  if (commaIndex === -1) return null
+  const header = uri.slice('data:'.length, commaIndex)
+  const payload = uri.slice(commaIndex + 1)
+  if (!header.split(';').includes('base64')) return null
+  return Base64.decode(payload)
 }
 
 const textControlCharactersRegex = /\\[AXQWOoLIpfH].*;/g
@@ -37,8 +37,8 @@ const curlyBraces = /\\[{}]/g
  * @return {Number} the angle
  */
 THREEx.Math.angle2 = function (p1, p2) {
-  var v1 = new THREE.Vector2(p1.x, p1.y)
-  var v2 = new THREE.Vector2(p2.x, p2.y)
+  const v1 = new THREE.Vector2(p1.x, p1.y)
+  const v2 = new THREE.Vector2(p2.x, p2.y)
   v2.sub(v1) // sets v2 to be our chord
   v2.normalize()
   if (v2.y < 0) return -Math.acos(v2.x)
@@ -46,7 +46,7 @@ THREEx.Math.angle2 = function (p1, p2) {
 }
 
 THREEx.Math.polar = function (point, distance, angle) {
-  var result = {}
+  const result = {}
   result.x = point.x + distance * Math.cos(angle)
   result.y = point.y + distance * Math.sin(angle)
   return result
@@ -60,9 +60,9 @@ THREEx.Math.polar = function (point, distance, angle) {
  * @param segments - number of segments between the two given points
  */
 function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
-  var vertex, i, center, p0, p1, angle, radius, startAngle, thetaAngle
+  let vertex, i, center, p0, p1, angle, radius, startAngle, thetaAngle
 
-  var obj = {}
+  const obj = {}
   obj.startPoint = p0 = startPoint
     ? new THREE.Vector2(startPoint.x, startPoint.y)
     : new THREE.Vector2(0, 0)
@@ -81,7 +81,7 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
   startAngle = THREEx.Math.angle2(center, p0)
   thetaAngle = angle / segments
 
-  var vertices = []
+  const vertices = []
 
   vertices.push(new THREE.Vector3(p0.x, p0.y, 0))
 
@@ -131,13 +131,8 @@ class DXFLoader extends THREE.Loader {
   }
 
   load(url, onLoad, onProgress, onError) {
-    var scope = this
-    var loader
-    try {
-      loader = new THREE.XHRLoader(scope.manager)
-    } catch {
-      loader = new THREE.FileLoader(scope.manager)
-    }
+    const scope = this
+    const loader = new THREE.FileLoader(scope.manager)
 
     loader.setPath(scope.path)
     // Test if it is a data-uri
@@ -157,7 +152,7 @@ class DXFLoader extends THREE.Loader {
   }
 
   loadString(text, onLoad, onError) {
-    var scope = this
+    const scope = this
     try {
       onLoad(scope.parse(text))
     } catch (error) {
@@ -172,7 +167,7 @@ class DXFLoader extends THREE.Loader {
 
   parse(text) {
     const parser = new DxfParser()
-    var dxf = parser.parseSync(text)
+    const dxf = parser.parseSync(text)
     return this.loadEntities(dxf, this)
   }
 
@@ -188,7 +183,7 @@ class DXFLoader extends THREE.Loader {
             'LWPOLYLINE' | 'MTEXT' | 'POLYLINE' | 'SOLID' | 'SPLINE' | 'TEXT' | 'VERTEX'
         */
     function drawEntity(entity, data) {
-      var mesh
+      let mesh
       if (entity.type === 'CIRCLE' || entity.type === 'ARC') {
         mesh = drawArc(entity, data)
       } else if (
@@ -199,6 +194,8 @@ class DXFLoader extends THREE.Loader {
         mesh = drawLine(entity, data)
       } else if (entity.type === 'TEXT') {
         mesh = drawText(entity, data)
+      } else if (entity.type === 'ATTDEF') {
+        mesh = drawAttdef(entity, data)
       } else if (entity.type === 'MTEXT') {
         mesh = drawMtext(entity, data)
       } else if (entity.type === 'SOLID') {
@@ -212,7 +209,7 @@ class DXFLoader extends THREE.Loader {
       } else if (entity.type === 'ELLIPSE') {
         mesh = drawEllipse(entity, data)
       } else if (entity.type === 'DIMENSION') {
-        var dimTypeEnum = entity.dimensionType & 7
+        const dimTypeEnum = entity.dimensionType & 7
         if (dimTypeEnum === 0) {
           mesh = drawDimension(entity, data)
         } else {
@@ -228,15 +225,15 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawEllipse(entity, data) {
-      var color = getColor(entity, data)
+      const color = getColor(entity, data)
 
-      var xrad = Math.sqrt(
+      const xrad = Math.sqrt(
         Math.pow(entity.majorAxisEndPoint.x, 2) + Math.pow(entity.majorAxisEndPoint.y, 2)
       )
-      var yrad = xrad * entity.axisRatio
-      var rotation = Math.atan2(entity.majorAxisEndPoint.y, entity.majorAxisEndPoint.x)
+      const yrad = xrad * entity.axisRatio
+      const rotation = Math.atan2(entity.majorAxisEndPoint.y, entity.majorAxisEndPoint.x)
 
-      var curve = new THREE.EllipseCurve(
+      const curve = new THREE.EllipseCurve(
         entity.center.x,
         entity.center.y,
         xrad,
@@ -247,31 +244,31 @@ class DXFLoader extends THREE.Loader {
         rotation
       )
 
-      var points = curve.getPoints(50)
-      var geometry = new THREE.BufferGeometry().setFromPoints(points)
-      var material = new THREE.LineBasicMaterial({ linewidth: 1, color: color })
+      const points = curve.getPoints(50)
+      const geometry = new THREE.BufferGeometry().setFromPoints(points)
+      const material = new THREE.LineBasicMaterial({ linewidth: 1, color: color })
 
       // Create the final object to add to the scene
-      var ellipse = new THREE.Line(geometry, material)
+      const ellipse = new THREE.Line(geometry, material)
       return ellipse
     }
 
     function drawMtext(entity, data) {
-      var color = getColor(entity, data)
+      const color = getColor(entity, data)
 
       if (!font) {
         return console.warn('font parameter not set. Ignoring text entity.')
       }
 
-      var textAndControlChars = parseDxfMTextContent(entity.text)
+      const textAndControlChars = parseDxfMTextContent(entity.text)
 
       //Note: We currently only support a single format applied to all the mtext text
-      var content = mtextContentAndFormattingToTextAndStyle(textAndControlChars, entity, color)
+      const content = mtextContentAndFormattingToTextAndStyle(textAndControlChars, entity, color)
 
-      var txt = createTextForScene(content.text, content.style, entity, color)
+      const txt = createTextForScene(content.text, content.style, entity, color)
       if (!txt) return null
 
-      var group = new THREE.Object3D()
+      const group = new THREE.Object3D()
       group.add(txt)
       return group
     }
@@ -282,7 +279,7 @@ class DXFLoader extends THREE.Loader {
         textHeight: entity.height,
       }
 
-      var text = []
+      const text = []
       for (let item of textAndControlChars) {
         if (typeof item === 'string') {
           if (item.startsWith('pxq') && item.endsWith(';')) {
@@ -294,7 +291,7 @@ class DXFLoader extends THREE.Loader {
             text.push(item)
           }
         } else if (Array.isArray(item)) {
-          var nestedFormat = mtextContentAndFormattingToTextAndStyle(item, entity, color)
+          const nestedFormat = mtextContentAndFormattingToTextAndStyle(item, entity, color)
           text.push(nestedFormat.text)
         } else if (typeof item === 'object') {
           if (item['S'] && item['S'].length === 3) {
@@ -330,8 +327,8 @@ class DXFLoader extends THREE.Loader {
         textEnt.rotation.z = (entity.rotation * Math.PI) / 180
       }
       if (entity.directionVector) {
-        var dv = entity.directionVector
-        textEnt.rotation.z = new THREE.Vector3(1, 0, 0).angleTo(new THREE.Vector3(dv.x, dv.y, dv.z))
+        const dv = entity.directionVector
+        textEnt.rotation.z = Math.atan2(dv.y, dv.x)
       }
       textEnt.orientationZ = (textEnt.rotation.z * 180) / Math.PI
 
@@ -391,7 +388,7 @@ class DXFLoader extends THREE.Loader {
       textEnt.sync(() => {
         if (textEnt.textAlign !== 'left') {
           textEnt.geometry.computeBoundingBox()
-          var textWidth = textEnt.geometry.boundingBox.max.x - textEnt.geometry.boundingBox.min.x
+          const textWidth = textEnt.geometry.boundingBox.max.x - textEnt.geometry.boundingBox.min.x
           if (textEnt.textAlign === 'center') textEnt.position.x += (entity.width - textWidth) / 2
           if (textEnt.textAlign === 'right') textEnt.position.x += entity.width - textWidth
         }
@@ -401,18 +398,18 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawSpline(entity, data) {
-      var color = getColor(entity, data)
+      const color = getColor(entity, data)
 
-      var points = getBSplinePolyline(
+      const points = getBSplinePolyline(
         entity.controlPoints,
         entity.degreeOfSplineCurve,
         entity.knotValues,
         100
       )
 
-      var geometry = new THREE.BufferGeometry().setFromPoints(points)
-      var material = new THREE.LineBasicMaterial({ linewidth: 1, color: color })
-      var splineObject = new THREE.Line(geometry, material)
+      const geometry = new THREE.BufferGeometry().setFromPoints(points)
+      const material = new THREE.LineBasicMaterial({ linewidth: 1, color: color })
+      const splineObject = new THREE.Line(geometry, material)
 
       return splineObject
     }
@@ -469,7 +466,7 @@ class DXFLoader extends THREE.Loader {
     function drawLine(entity, data) {
       let points = []
       let color = getColor(entity, data)
-      var material, lineType, vertex, startPoint, endPoint, bulgeGeometry, bulge, i, line
+      let material, lineType, vertex, startPoint, endPoint, bulge, i, line
 
       if (!entity.vertices) return console.warn('entity missing vertices.')
 
@@ -508,7 +505,7 @@ class DXFLoader extends THREE.Loader {
       }
 
       // create geometry
-      var geometry = new BufferGeometry().setFromPoints(points)
+      const geometry = new BufferGeometry().setFromPoints(points)
       line = new THREE.Line(geometry, material)
       return line
     }
@@ -593,7 +590,7 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawArc(entity, data) {
-      var startAngle, endAngle
+      let startAngle, endAngle
       if (entity.type === 'CIRCLE') {
         startAngle = entity.startAngle || 0
         endAngle = startAngle + 2 * Math.PI
@@ -602,14 +599,14 @@ class DXFLoader extends THREE.Loader {
         endAngle = entity.endAngle
       }
 
-      var curve = new THREE.ArcCurve(0, 0, entity.radius, startAngle, endAngle)
+      const curve = new THREE.ArcCurve(0, 0, entity.radius, startAngle, endAngle)
 
-      var points = curve.getPoints(32)
-      var geometry = new THREE.BufferGeometry().setFromPoints(points)
+      const points = curve.getPoints(32)
+      const geometry = new THREE.BufferGeometry().setFromPoints(points)
 
-      var material = new THREE.LineBasicMaterial({ color: getColor(entity, data) })
+      const material = new THREE.LineBasicMaterial({ color: getColor(entity, data) })
 
-      var arc = new THREE.Line(geometry, material)
+      const arc = new THREE.Line(geometry, material)
       arc.position.x = entity.center.x
       arc.position.y = entity.center.y
       arc.position.z = entity.center.z
@@ -619,15 +616,15 @@ class DXFLoader extends THREE.Loader {
 
     function addTriangleFacingCamera(verts, p0, p1, p2) {
       // Calculate which direction the points are facing (clockwise or counter-clockwise)
-      var vector1 = new Vector3()
-      var vector2 = new Vector3()
+      const vector1 = new Vector3()
+      const vector2 = new Vector3()
       vector1.subVectors(p1, p0)
       vector2.subVectors(p2, p0)
       vector1.cross(vector2)
 
-      var v0 = new Vector3(p0.x, p0.y, p0.z)
-      var v1 = new Vector3(p1.x, p1.y, p1.z)
-      var v2 = new Vector3(p2.x, p2.y, p2.z)
+      const v0 = new Vector3(p0.x, p0.y, p0.z)
+      const v1 = new Vector3(p1.x, p1.y, p1.z)
+      const v2 = new Vector3(p2.x, p2.y, p2.z)
 
       // If z < 0 then we must draw these in reverse order
       if (vector1.z < 0) {
@@ -638,13 +635,12 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawSolid(entity, data) {
-      var material,
-        verts,
-        geometry = new THREE.BufferGeometry()
+      let material
+      const geometry = new THREE.BufferGeometry()
 
-      var points = entity.points
+      const points = entity.points
       // verts = geometry.vertices;
-      verts = []
+      const verts = []
       addTriangleFacingCamera(verts, points[0], points[1], points[2])
       addTriangleFacingCamera(verts, points[1], points[2], points[3])
 
@@ -655,7 +651,7 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawText(entity, data) {
-      var geometry, material, text
+      let geometry, material, text
 
       if (!font)
         return console.warn(
@@ -672,7 +668,7 @@ class DXFLoader extends THREE.Loader {
       })
 
       if (entity.rotation) {
-        var zRotation = (entity.rotation * Math.PI) / 180
+        const zRotation = (entity.rotation * Math.PI) / 180
         geometry.rotateZ(zRotation)
       }
 
@@ -692,8 +688,16 @@ class DXFLoader extends THREE.Loader {
       return text
     }
 
+    // ATTDEF (attribute definition) is a block-template entity: same geometry fields as
+    // TEXT (startPoint, textHeight, rotation, text), plus attribute metadata (tag, prompt,
+    // constant...) this loader doesn't resolve. Only the invisible flag affects rendering.
+    function drawAttdef(entity, data) {
+      if (entity.invisible) return null
+      return drawText(entity, data)
+    }
+
     function drawPoint(entity, data) {
-      var geometry, material, point
+      let geometry, material, point
 
       geometry = new THREE.BufferGeometry()
 
@@ -702,7 +706,7 @@ class DXFLoader extends THREE.Loader {
         new Float32BufferAttribute([entity.position.x, entity.position.y, entity.position.z], 3)
       )
 
-      var color = getColor(entity, data)
+      const color = getColor(entity, data)
 
       material = new THREE.PointsMaterial({ size: 0.1, color: new Color(color) })
       point = new THREE.Points(geometry, material)
@@ -710,19 +714,19 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawDimension(entity, data) {
-      var block = data.blocks[entity.block]
+      const block = data.blocks[entity.block]
 
       if (!block || !block.entities) return null
 
-      var group = new THREE.Object3D()
+      const group = new THREE.Object3D()
       // if(entity.anchorPoint) {
       //     group.position.x = entity.anchorPoint.x;
       //     group.position.y = entity.anchorPoint.y;
       //     group.position.z = entity.anchorPoint.z;
       // }
 
-      for (var i = 0; i < block.entities.length; i++) {
-        var childEntity = drawEntity(block.entities[i], data, group)
+      for (let i = 0; i < block.entities.length; i++) {
+        const childEntity = drawEntity(block.entities[i], data, group)
         if (childEntity) group.add(childEntity)
       }
 
@@ -730,11 +734,11 @@ class DXFLoader extends THREE.Loader {
     }
 
     function drawBlock(entity, data) {
-      var block = data.blocks[entity.name]
+      const block = data.blocks[entity.name]
 
       if (!block.entities) return null
 
-      var group = new THREE.Object3D()
+      const group = new THREE.Object3D()
 
       if (entity.xScale) group.scale.x = entity.xScale
       if (entity.yScale) group.scale.y = entity.yScale
@@ -749,8 +753,8 @@ class DXFLoader extends THREE.Loader {
         group.position.z = entity.position.z
       }
 
-      for (var i = 0; i < block.entities.length; i++) {
-        var childEntity = drawEntity(block.entities[i], data, group)
+      for (let i = 0; i < block.entities.length; i++) {
+        const childEntity = drawEntity(block.entities[i], data, group)
         if (childEntity) group.add(childEntity)
       }
 
@@ -758,22 +762,22 @@ class DXFLoader extends THREE.Loader {
     }
 
     function getColor(entity, data) {
-      var color = null // 0x000000 //default
+      let color = null // 0x000000 //default
 
       if (entity.color) color = entity.color
       else if (data.tables && data.tables.layer && data.tables.layer.layers[entity.layer])
         color = data.tables.layer.layers[entity.layer].color
 
-      if (color == null || color === 0xffffff) {
+      if (color == null) {
         color = data.defaultColor // 0x000000
       }
       return color
     }
 
     function createLineTypeShaders(data) {
-      var ltype, type
+      let ltype, type
       if (!data.tables || !data.tables.lineType) return
-      var ltypes = data.tables.lineType.lineTypes
+      const ltypes = data.tables.lineType.lineTypes
 
       for (type in ltypes) {
         ltype = ltypes[type]
@@ -783,9 +787,9 @@ class DXFLoader extends THREE.Loader {
     }
 
     function createDashedLineShader(pattern) {
-      var i,
-        dashedLineShader = {},
-        totalLength = 0.0
+      let i
+      const dashedLineShader = {}
+      let totalLength = 0.0
 
       for (i = 0; i < pattern.length; i++) {
         totalLength += Math.abs(pattern[i])
@@ -875,7 +879,7 @@ class DXFLoader extends THREE.Loader {
       let color =
         entityColor === 0x000000
           ? new THREE.Color()
-          : new THREE.Color(`#${entityColor.toString(16)}`)
+          : new THREE.Color(`#${entityColor.toString(16).padStart(6, '0')}`)
       const layer = entity.layer || 'default'
       if (Object.keys(data.faceVertices).indexOf(layer) === -1) {
         data.faceVertices[layer] = []
@@ -965,13 +969,13 @@ class DXFLoader extends THREE.Loader {
 
     createLineTypeShaders(data)
 
-    var entities = []
-    var layers = {}
+    const entities = []
+    const layers = {}
     data.faceVertices = {}
     data.faceColors = {}
     data.defaultColor = defaultColor
     // Create scene from dxf object (data)
-    var i, entity, obj
+    let i, entity, obj
 
     for (i = 0; i < data.entities.length; i++) {
       entity = data.entities[i]

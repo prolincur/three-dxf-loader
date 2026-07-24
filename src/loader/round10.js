@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-present Prolincur Technologies LLP.
+ * All Rights Reserved.
+ */
+
 // This is based on the example code found from:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor
 // Example code on MDN is public domain or CC0 (your preference) or MIT depending when the

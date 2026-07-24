@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2020-present Prolincur Technologies LLP.
+ * All Rights Reserved.
+ */
+
 import 'three'
 import * as ThreeDxfLoader from 'three-dxf-viewer'
+import { DXFLoader } from 'three-dxf-loader'
 
 const progress = document.getElementById('file-progress-bar')
 const $progress = document.getElementsByClassName('progress')[0]
@@ -82,8 +88,8 @@ function onSuccess(evt) {
   setTimeout(function () {
     $progress.classList.remove('loading')
   }, 2000)
-  const parser = new window.DxfParser()
-  const dxf = parser.parseSync(fileReader.result)
+  const dxfLoader = new DXFLoader()
+  const { dxf } = dxfLoader.parse(fileReader.result)
 
   dxfStringCheckbox.addEventListener('change', (event) => {
     if (!dxf) {
@@ -102,7 +108,7 @@ function onSuccess(evt) {
   //  and this discussion https://github.com/mrdoob/three.js/issues/7398
   let font
   const loader = new ThreeDxfLoader.THREEx.FontLoader()
-  const fontUrl = '/sample/fonts/helvetiker_regular.typeface.json'
+  const fontUrl = '/examples/web/fonts/helvetiker_regular.typeface.json'
   loader.load(
     fontUrl,
     function (response) {
