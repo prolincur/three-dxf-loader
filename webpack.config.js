@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-24 Prolincur Technologies LLP.
+ * Copyright (c) 2020-present Prolincur Technologies LLP.
  * All Rights Reserved.
  */
 
@@ -53,7 +53,7 @@ const config = {
   },
   plugins: [
     new webpack.BannerPlugin(
-      'Copyright (c) 2021-24 Prolincur Technologies LLP.\nCopyright (c) 2015 GDS Storefront Estimating\nAll Rights Reserved.\n\n' +
+      'Copyright (c) 2021-present Prolincur Technologies LLP.\nCopyright (c) 2015 GDS Storefront Estimating\nAll Rights Reserved.\n\n' +
         'Please check the provided LICENSE file for licensing details.\n' +
         '\n' +
         'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\n' +

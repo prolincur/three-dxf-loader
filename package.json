@@ -8,9 +8,9 @@
   "scripts": {
     "build-dev": "cross-env NODE_ENV=development webpack -c webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack -c webpack.config.js",
-    "prepublishOnly": "npm run build",
-    "start": "npm install && npm run build && cd sample && npm install && npm run start",
-    "start-dev": "npm install && npm run build-dev && cd sample && npm install && npm run start",
+    "prepublishOnly": "pnpm build",
+    "start": "pnpm install && pnpm build && cd sample && pnpm install && pnpm start",
+    "start-dev": "pnpm install && pnpm build-dev && cd sample && pnpm install && pnpm start",
     "lint": "eslint src --ext js --report-unused-disable-directives --max-warnings 0",
     "prettier": "prettier src/**/*.js --write && prettier sample/*.js --write"
   },
