@@ -4,7 +4,7 @@
   "description": "Cross platform DXF loader for three.js. Out of the box usable with react-three-fiber.",
   "type": "module",
   "main": "dist/three-dxf-loader.js",
-  "module": "src/Loader.js",
+  "module": "dist/three-dxf-loader.js",
   "scripts": {
     "build-dev": "cross-env NODE_ENV=development webpack -c webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack -c webpack.config.js",
