@@ -321,7 +321,7 @@ class DXFLoader extends THREE.Loader {
       }
       if (entity.directionVector) {
         const dv = entity.directionVector
-        textEnt.rotation.z = new THREE.Vector3(1, 0, 0).angleTo(new THREE.Vector3(dv.x, dv.y, dv.z))
+        textEnt.rotation.z = Math.atan2(dv.y, dv.x)
       }
       textEnt.orientationZ = (textEnt.rotation.z * 180) / Math.PI
 
