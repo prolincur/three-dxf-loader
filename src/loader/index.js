@@ -189,6 +189,8 @@ class DXFLoader extends THREE.Loader {
         mesh = drawLine(entity, data)
       } else if (entity.type === 'TEXT') {
         mesh = drawText(entity, data)
+      } else if (entity.type === 'ATTDEF') {
+        mesh = drawAttdef(entity, data)
       } else if (entity.type === 'MTEXT') {
         mesh = drawMtext(entity, data)
       } else if (entity.type === 'SOLID') {
@@ -679,6 +681,14 @@ class DXFLoader extends THREE.Loader {
       text.orientationZ = entity.rotation
       text.color = color
       return text
+    }
+
+    // ATTDEF (attribute definition) is a block-template entity: same geometry fields as
+    // TEXT (startPoint, textHeight, rotation, text), plus attribute metadata (tag, prompt,
+    // constant...) this loader doesn't resolve. Only the invisible flag affects rendering.
+    function drawAttdef(entity, data) {
+      if (entity.invisible) return null
+      return drawText(entity, data)
     }
 
     function drawPoint(entity, data) {
