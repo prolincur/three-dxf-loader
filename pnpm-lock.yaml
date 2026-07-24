@@ -21,8 +21,8 @@ importers:
         specifier: '>=0.129.0'
         version: 0.185.1
       troika-three-text:
-        specifier: ^0.48.0
-        version: 0.48.1(three@0.185.1)
+        specifier: ^0.52.4
+        version: 0.52.4(three@0.185.1)
     devDependencies:
       cross-env:
         specifier: ^7.0.3
@@ -1167,18 +1167,18 @@ packages:
   three@0.185.1:
     resolution: {integrity: sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==}
 
-  troika-three-text@0.48.1:
-    resolution: {integrity: sha512-2qVZnqEuwzUpryjjaE8DYaBb8kCMUU8XmFkns/CA+WcfCLyosr7EdT792v3tFZFMlIsP55pb1jMAP73LXw0QRw==}
+  troika-three-text@0.52.4:
+    resolution: {integrity: sha512-V50EwcYGruV5rUZ9F4aNsrytGdKcXKALjEtQXIOBfhVoZU9VAqZNIoGQ3TMiooVqFAbR1w15T+f+8gkzoFzawg==}
     peerDependencies:
       three: '>=0.125.0'
 
-  troika-three-utils@0.48.0:
-    resolution: {integrity: sha512-zaa1ZLFj09359WNLgA+3WqVJd9QTgB8otxL35URKb+1iHvma9OtY+y/TJjdX9r4qp1HH4aI8z8mHspmWZ83nXg==}
+  troika-three-utils@0.52.4:
+    resolution: {integrity: sha512-NORAStSVa/BDiG52Mfudk4j1FG4jC4ILutB3foPnfGbOeIs9+G5vZLa0pnmnaftZUGm4UwSoqEpWdqvC7zms3A==}
     peerDependencies:
       three: '>=0.125.0'
 
-  troika-worker-utils@0.48.0:
-    resolution: {integrity: sha512-NWtRXje3N6SeBH95teq3I+ygoEVWCMC0+TX/FEQIot0/h3oI3+zOsfpZLwnKn1ILcTY8rYGyT9gjJ0ijtKxRBg==}
+  troika-worker-utils@0.52.0:
+    resolution: {integrity: sha512-W1CpvTHykaPH5brv5VHLfQo9D1OYuo0cSBEUQFFT/nBUzM8iD6Lq2/tgG/f1OelbAS1WtaTPQzE5uM49egnngw==}
 
   tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
@@ -2374,19 +2374,19 @@ snapshots:
 
   three@0.185.1: {}
 
-  troika-three-text@0.48.1(three@0.185.1):
+  troika-three-text@0.52.4(three@0.185.1):
     dependencies:
       bidi-js: 1.0.3
       three: 0.185.1
-      troika-three-utils: 0.48.0(three@0.185.1)
-      troika-worker-utils: 0.48.0
+      troika-three-utils: 0.52.4(three@0.185.1)
+      troika-worker-utils: 0.52.0
       webgl-sdf-generator: 1.1.1
 
-  troika-three-utils@0.48.0(three@0.185.1):
+  troika-three-utils@0.52.4(three@0.185.1):
     dependencies:
       three: 0.185.1
 
-  troika-worker-utils@0.48.0: {}
+  troika-worker-utils@0.52.0: {}
 
   tslib@2.6.2: {}
 

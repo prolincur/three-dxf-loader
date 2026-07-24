@@ -66,6 +66,6 @@
     "@dxfom/mtext": "^0.3.2",
     "dxf-parser": "^1.1.2",
     "js-base64": "^3.7.3",
-    "troika-three-text": "^0.48.0"
+    "troika-three-text": "^0.52.4"
   }
 }
