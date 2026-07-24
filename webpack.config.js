@@ -34,6 +34,7 @@ const config = {
   externalsType: 'module',
   externals: [
     'three',
+    'three/examples/jsm/loaders/FontLoader.js',
     'three/examples/jsm/geometries/TextGeometry.js',
     'three/examples/jsm/controls/OrbitControls.js'
   ],

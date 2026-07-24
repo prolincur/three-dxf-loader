@@ -11,18 +11,13 @@ import ThreeEx from './extend'
 const THREEx = { Math: {} }
 
 function decodeDataUri(uri) {
-  if (uri) {
-    const mime = uri.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)
-    if (mime && mime.length > 0) {
-      const type = mime[1]
-      const data = uri.replace('data:' + type + ';', '').split(',')
-      if (data && data.length === 2 && data[0] === 'base64') {
-        const byteString = data[1]
-        return Base64.decode(byteString)
-      }
-    }
-  }
-  return null
+  if (!uri || !uri.startsWith('data:')) return null
+  const commaIndex = uri.indexOf(',')
+  if (commaIndex === -1) return null
+  const header = uri.slice('data:'.length, commaIndex)
+  const payload = uri.slice(commaIndex + 1)
+  if (!header.split(';').includes('base64')) return null
+  return Base64.decode(payload)
 }
 
 const textControlCharactersRegex = /\\[AXQWOoLIpfH].*;/g
@@ -464,7 +459,7 @@ class DXFLoader extends THREE.Loader {
     function drawLine(entity, data) {
       let points = []
       let color = getColor(entity, data)
-      let material, lineType, vertex, startPoint, endPoint, bulgeGeometry, bulge, i, line
+      let material, lineType, vertex, startPoint, endPoint, bulge, i, line
 
       if (!entity.vertices) return console.warn('entity missing vertices.')
 
