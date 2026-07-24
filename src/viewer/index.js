@@ -94,9 +94,8 @@ function Viewer(data, parent, width, height, font) {
   controls.target.y = camera.position.y
   controls.target.z = dims.max.z
   controls.zoomSpeed = 1
-
-  //Uncomment this to disable rotation (does not make much sense with 2D drawings).
-  //controls.enableRotate = false;
+  // Rotation doesn't make sense for a 2D drawing.
+  controls.enableRotate = false
 
   this.render = function () {
     renderer.render(scene, camera)
