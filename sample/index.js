@@ -1,5 +1,6 @@
 import 'three'
 import * as ThreeDxfLoader from 'three-dxf-viewer'
+import { DXFLoader } from 'three-dxf-loader'
 
 const progress = document.getElementById('file-progress-bar')
 const $progress = document.getElementsByClassName('progress')[0]
@@ -82,8 +83,8 @@ function onSuccess(evt) {
   setTimeout(function () {
     $progress.classList.remove('loading')
   }, 2000)
-  const parser = new window.DxfParser()
-  const dxf = parser.parseSync(fileReader.result)
+  const dxfLoader = new DXFLoader()
+  const { dxf } = dxfLoader.parse(fileReader.result)
 
   dxfStringCheckbox.addEventListener('change', (event) => {
     if (!dxf) {
