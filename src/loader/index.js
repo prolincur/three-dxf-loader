@@ -978,6 +978,18 @@ class DXFLoader extends THREE.Loader {
       obj = drawEntity(entity, data)
 
       if (obj) {
+        // Link the drawn object back to its source entity record so consumers can inspect it.
+        // handle is the stable id -- the full record is still available on the returned `dxf`.
+        obj.userData.dxfInfo = {
+          handle: entity.handle,
+          ownerHandle: entity.ownerHandle,
+          type: entity.type,
+          layer: entity.layer,
+          lineType: entity.lineType,
+          lineTypeScale: entity.lineTypeScale,
+          colorIndex: entity.colorIndex,
+          inPaperSpace: entity.inPaperSpace,
+        }
         entities.push(obj)
         if (enableLayer && entity.layer) {
           let layerGroup = layers[entity.layer]
@@ -1008,6 +1020,8 @@ class DXFLoader extends THREE.Loader {
       })
       // faceMaterial.emissive.setHex(0x5DC228) // default is black color
       const faceObject = new THREE.Mesh(faceGeometry, faceMaterial)
+      // 3dfaces are merged per layer, so only the layer is meaningful (no single source entity)
+      faceObject.userData.dxfInfo = { type: '3DFACE', layer }
       entities.push(faceObject)
       if (enableLayer) {
         let layerGroup = layers[layer]
