@@ -28,6 +28,32 @@ function decodeDataUri(uri) {
 const textControlCharactersRegex = /\\[AXQWOoLIpfH].*;/g
 const curlyBraces = /\\[{}]/g
 
+// DXF $INSUNITS code -> [full name, abbreviation]. The unit enum lives here (getUnitToMeter holds the
+// matching meter scale factor); consumers read the resolved unit off the returned `dxf.units`.
+const DXF_UNITS = {
+  0: ['Unitless', ''],
+  1: ['Inches', 'in'],
+  2: ['Feet', 'ft'],
+  3: ['Miles', 'mi'],
+  4: ['Millimeters', 'mm'],
+  5: ['Centimeters', 'cm'],
+  6: ['Meters', 'm'],
+  7: ['Kilometers', 'km'],
+  8: ['Microinches', 'µin'],
+  9: ['Mils', 'mil'],
+  10: ['Yards', 'yd'],
+  11: ['Angstroms', 'Å'],
+  12: ['Nanometers', 'nm'],
+  13: ['Microns', 'µm'],
+  14: ['Decimeters', 'dm'],
+  15: ['Decameters', 'dam'],
+  16: ['Hectometers', 'hm'],
+  17: ['Gigameters', 'Gm'],
+  18: ['Astronomical units', 'AU'],
+  19: ['Light years', 'ly'],
+  20: ['Parsecs', 'pc'],
+}
+
 /**
  * Returns the angle in radians of the vector (p1,p2). In other words, imagine
  * putting the base of the vector at coordinates (0,0) and finding the angle
@@ -1057,6 +1083,15 @@ class DXFLoader extends THREE.Loader {
       const finalScale = scale * unitToMeter
       parent.scale.set(finalScale, finalScale, finalScale)
     }
+
+    // Resolve the unit off the header so consumers read it off `dxf` instead of re-deriving from the
+    // raw code (the meter factor stays authoritative via getUnitToMeter). Version is passed through
+    // as the raw $ACADVER code -- it's an unambiguous format id, and mapping it to a release year is
+    // lossy (one code spans many AutoCAD releases).
+    const unitCode = data.header?.['$INSUNITS'] ?? 0
+    const [unitName, unitAbbr] = DXF_UNITS[unitCode] || ['', '']
+    data.units = { code: unitCode, name: unitName, abbr: unitAbbr, toMeter: getUnitToMeter(unitCode) }
+    data.version = { code: data.header?.['$ACADVER'] }
 
     return {
       entity: parent,
