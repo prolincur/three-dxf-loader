@@ -84,8 +84,9 @@ THREEx.Math.polar = function (point, distance, angle) {
  * @param endPoint - the ending point of the curve
  * @param bulge - a value indicating how much to curve
  * @param segments - number of segments between the two given points
+ * @param defaultZ - Z to use when a point carries none, e.g. an LWPOLYLINE elevation
  */
-function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
+function getBulgeCurvePoints(startPoint, endPoint, bulge, segments, defaultZ = 0) {
   let vertex, i, center, p0, p1, angle, radius, startAngle, thetaAngle
 
   const obj = {}
@@ -109,11 +110,15 @@ function getBulgeCurvePoints(startPoint, endPoint, bulge, segments) {
 
   const vertices = []
 
-  vertices.push(new THREE.Vector3(p0.x, p0.y, 0))
+  // p0/p1 are Vector2, and THREEx.Math.polar returns a plain {x, y}, so the Z has
+  // to come off the source point rather than the computed ones.
+  const z = startPoint && startPoint.z !== undefined ? startPoint.z : defaultZ
+
+  vertices.push(new THREE.Vector3(p0.x, p0.y, z))
 
   for (i = 1; i <= segments - 1; i++) {
     vertex = THREEx.Math.polar(center, Math.abs(radius), startAngle + thetaAngle * i)
-    vertices.push(new THREE.Vector3(vertex.x, vertex.y, 0))
+    vertices.push(new THREE.Vector3(vertex.x, vertex.y, z))
   }
 
   return vertices
@@ -500,17 +505,25 @@ class DXFLoader extends THREE.Loader {
       if (entity.isPolyfaceMesh) {
         points = decomposePolyfaceMesh(entity, data)
       } else {
+        // LWPOLYLINE stores one elevation (group code 38) on the entity instead of a
+        // Z per vertex, so without this every LWPOLYLINE above or below the XY plane
+        // is drawn flattened onto Z=0. POLYLINE vertices carry their own Z and are
+        // used as-is.
+        const defaultZ = entity.elevation !== undefined ? entity.elevation : 0
+
         for (i = 0; i < entity.vertices.length; i++) {
           if (entity.vertices[i].bulge) {
             bulge = entity.vertices[i].bulge
             startPoint = entity.vertices[i]
             endPoint = i + 1 < entity.vertices.length ? entity.vertices[i + 1] : points[0]
 
-            let bulgePoints = getBulgeCurvePoints(startPoint, endPoint, bulge)
+            let bulgePoints = getBulgeCurvePoints(startPoint, endPoint, bulge, undefined, defaultZ)
             points.push.apply(points, bulgePoints)
           } else {
             vertex = entity.vertices[i]
-            points.push(new THREE.Vector3(vertex.x, vertex.y, 0))
+            points.push(
+              new THREE.Vector3(vertex.x, vertex.y, vertex.z !== undefined ? vertex.z : defaultZ)
+            )
           }
         }
 
@@ -558,7 +571,7 @@ class DXFLoader extends THREE.Loader {
             faces.push(face)
           }
         } else {
-          vertices.push(new THREE.Vector3(v.x, v.y, 0))
+          vertices.push(new THREE.Vector3(v.x, v.y, v.z ?? 0))
         }
       }
 
