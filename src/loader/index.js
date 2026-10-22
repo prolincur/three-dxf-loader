@@ -288,7 +288,10 @@ class DXFLoader extends THREE.Loader {
 
       //Note: We currently only support a single format applied to all the mtext text
       const { text, horizontalAlignment } = parseMText(entity.text)
-      const style = { horizontalAlignment: horizontalAlignment || 'left', textHeight: entity.height }
+      const style = {
+        horizontalAlignment: horizontalAlignment || 'left',
+        textHeight: entity.height,
+      }
 
       const txt = createTextForScene(text, style, entity, color)
       if (!txt) return null
@@ -302,7 +305,7 @@ class DXFLoader extends THREE.Loader {
       if (!text) return null
 
       let textEnt = new Text()
-      textEnt.text = text.replaceAll('\\P', '\n').replaceAll('\\X', '\n')
+      textEnt.text = text
       textEnt.isMText = true
       textEnt.isText = true
 
