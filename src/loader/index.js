@@ -6,11 +6,11 @@
 import * as THREE from 'three'
 import { BufferGeometry, Color, Float32BufferAttribute, Vector3 } from 'three'
 import { Text } from 'troika-three-text'
-import { parseDxfMTextContent } from '@dxfom/mtext'
 import { Base64 } from 'js-base64'
 import DxfParser from 'dxf-parser'
 import bSpline from './bspline'
 import ThreeEx from './extend'
+import { parseMText, parseText } from './mtext'
 
 // Three.js extension functions. Webpack doesn't seem to like it if we modify the THREE object directly.
 const THREEx = { Math: {} }
@@ -24,9 +24,6 @@ function decodeDataUri(uri) {
   if (!header.split(';').includes('base64')) return null
   return Base64.decode(payload)
 }
-
-const textControlCharactersRegex = /\\[AXQWOoLIpfH].*;/g
-const curlyBraces = /\\[{}]/g
 
 // DXF $INSUNITS code -> [full name, abbreviation]. The unit enum lives here (getUnitToMeter holds the
 // matching meter scale factor); consumers read the resolved unit off the returned `dxf.units`.
@@ -291,12 +288,15 @@ class DXFLoader extends THREE.Loader {
         return console.warn('font parameter not set. Ignoring text entity.')
       }
 
-      const textAndControlChars = parseDxfMTextContent(entity.text)
+      //Note: We currently only support a single format applied to all the mtext text. With
+      // several paragraph alignments (\pxq) the last one is used for the whole entity.
+      const { text, horizontalAlignment } = parseMText(entity.text)
+      const style = {
+        horizontalAlignment: horizontalAlignment || 'left',
+        textHeight: entity.height,
+      }
 
-      //Note: We currently only support a single format applied to all the mtext text
-      const content = mtextContentAndFormattingToTextAndStyle(textAndControlChars, entity, color)
-
-      const txt = createTextForScene(content.text, content.style, entity, color)
+      const txt = createTextForScene(text, style, entity, color)
       if (!txt) return null
 
       const group = new THREE.Object3D()
@@ -304,45 +304,11 @@ class DXFLoader extends THREE.Loader {
       return group
     }
 
-    function mtextContentAndFormattingToTextAndStyle(textAndControlChars, entity, color) {
-      let activeStyle = {
-        horizontalAlignment: 'left',
-        textHeight: entity.height,
-      }
-
-      const text = []
-      for (let item of textAndControlChars) {
-        if (typeof item === 'string') {
-          if (item.startsWith('pxq') && item.endsWith(';')) {
-            if (item.indexOf('c') !== -1) activeStyle.horizontalAlignment = 'center'
-            else if (item.indexOf('l') !== -1) activeStyle.horizontalAlignment = 'left'
-            else if (item.indexOf('r') !== -1) activeStyle.horizontalAlignment = 'right'
-            else if (item.indexOf('j') !== -1) activeStyle.horizontalAlignment = 'justify'
-          } else {
-            text.push(item)
-          }
-        } else if (Array.isArray(item)) {
-          const nestedFormat = mtextContentAndFormattingToTextAndStyle(item, entity, color)
-          text.push(nestedFormat.text)
-        } else if (typeof item === 'object') {
-          if (item['S'] && item['S'].length === 3) {
-            text.push(item['S'][0] + '/' + item['S'][2])
-          } else {
-            // not yet supported.
-          }
-        }
-      }
-      return {
-        text: text.join(),
-        style: activeStyle,
-      }
-    }
-
     function createTextForScene(text, style, entity, color) {
       if (!text) return null
 
       let textEnt = new Text()
-      textEnt.text = text.replaceAll('\\P', '\n').replaceAll('\\X', '\n')
+      textEnt.text = text
       textEnt.isMText = true
       textEnt.isText = true
 
@@ -700,7 +666,10 @@ class DXFLoader extends THREE.Loader {
         return console.warn('Text is not supported without TextGeometry')
       }
 
-      geometry = new ThreeEx.TextGeometry(entity.text, {
+      // Typeface fonts often lack symbols like ⌀; keep the raw code rather than drop the character
+      const glyphs = font.data && font.data.glyphs
+      const content = parseText(entity.text, (ch) => !glyphs || ch in glyphs)
+      geometry = new ThreeEx.TextGeometry(content, {
         font: font,
         height: 0,
         size: entity.textHeight || 12,
@@ -719,7 +688,7 @@ class DXFLoader extends THREE.Loader {
       text.position.y = entity.startPoint.y
       text.position.z = entity.startPoint.z
 
-      text.text = entity.text
+      text.text = content
       text.isText = true
       text.fontSize = entity.textHeight
       text.orientationZ = entity.rotation
