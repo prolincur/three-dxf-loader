@@ -10,10 +10,11 @@
 const SPECIAL_CHARACTERS = { d: '°', c: '⌀', p: '±', '%': '%' }
 const PARAGRAPH_ALIGNMENTS = { l: 'left', c: 'center', r: 'right', j: 'justify', d: 'justify' }
 const LINE_BREAK_CODES = 'PXN'
-const TOGGLE_CODES = 'LlOoKk'
+const MTEXT_TOGGLE_CODES = 'LlOoKk'
 const CODES_WITH_ARGUMENT = 'ACcFfHQTW'
 const STACK_SEPARATORS = '^/#'
-const TEXT_TOGGLE_CODES = 'uok'
+const PERCENT_TOGGLE_CODES = 'uok'
+const PERCENT_CODE = /%%(\d{3}|.)/
 // ^I (tab) and ^J (line feed) control characters; '^ ' is a literal caret
 const CARET_CODES = { I: ' ', J: '\n', ' ': '^' }
 const SCRIPT_CHARACTERS = '0123456789+-'
@@ -24,18 +25,30 @@ const SUBSCRIPTS = '₀₁₂₃₄₅₆₇₈₉₊₋'
 const toScript = (str, script) =>
   /^[0-9+-]+$/.test(str) ? str.replace(/./g, (c) => script[SCRIPT_CHARACTERS.indexOf(c)]) : str
 
-// Converts raw TEXT / ATTDEF content: %%d, %%c, %%p and %%% become their symbols and %%nnn the
-// character with that code; %%u / %%o / %%k (underline / overline / strike-through) are not rendered.
-// \U+XXXX unicode escapes are decoded.
-export function parseText(raw) {
+// Resolves a %% control code: %%d, %%c, %%p and %%% become their symbols and %%nnn the character
+// with that code (read as Latin-1, so 128-159 differ from a cp1252 drawing); %%u / %%o / %%k
+// (underline / overline / strike-through) are not rendered. Unknown codes and characters
+// `hasGlyph` rejects are kept as written.
+const resolvePercentCode = (match, code, hasGlyph) => {
+  const lower = code.toLowerCase()
+  if (PERCENT_TOGGLE_CODES.includes(lower)) return ''
+  const ch = /^\d{3}$/.test(code)
+    ? String.fromCharCode(parseInt(code, 10))
+    : SPECIAL_CHARACTERS[lower]
+  return ch !== undefined && hasGlyph(ch) ? ch : match
+}
+
+// Converts raw TEXT / ATTDEF content: %% control codes and \U+XXXX unicode escapes are resolved.
+// `hasGlyph` lets the caller keep the raw code when its font cannot draw the character.
+export function parseText(raw, hasGlyph = () => true) {
   return (raw || '')
-    .replace(/%%(\d{3}|.)/g, (match, code) => {
-      if (/^\d{3}$/.test(code)) return String.fromCharCode(parseInt(code, 10))
-      const lower = code.toLowerCase()
-      if (TEXT_TOGGLE_CODES.includes(lower)) return ''
-      return SPECIAL_CHARACTERS[lower] ?? match
+    .replace(new RegExp(PERCENT_CODE, 'g'), (match, code) =>
+      resolvePercentCode(match, code, hasGlyph)
+    )
+    .replace(/\\U\+([0-9a-fA-F]{4})/g, (match, hex) => {
+      const ch = String.fromCharCode(parseInt(hex, 16))
+      return hasGlyph(ch) ? ch : match
     })
-    .replace(/\\U\+([0-9a-fA-F]{4})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
 }
 
 export function parseMText(raw) {
@@ -87,7 +100,7 @@ export function parseMText(raw) {
         text += ' '
       } else if (code === '\\' || code === '{' || code === '}') {
         text += code
-      } else if (TOGGLE_CODES.includes(code)) {
+      } else if (MTEXT_TOGGLE_CODES.includes(code)) {
         // underline / overline / strike-through: not rendered
       } else if (code === 'U' && input[i] === '+') {
         // \U+XXXX unicode character
@@ -98,7 +111,7 @@ export function parseMText(raw) {
         } else {
           text += '\\U'
         }
-      } else if (code === 'M' && input[i] === '+') {
+      } else if (code === 'M' && /^\+\d[0-9a-fA-F]{4}/.test(input.slice(i, i + 6))) {
         // \M+nXXXX multibyte character: needs the drawing code page, skipped
         i += 6
       } else if (code === 'S') {
@@ -136,13 +149,10 @@ export function parseMText(raw) {
     } else if (ch === '^' && CARET_CODES[input[i + 1]] !== undefined) {
       text += CARET_CODES[input[i + 1]]
       i += 2
-    } else if (
-      ch === '%' &&
-      input[i + 1] === '%' &&
-      SPECIAL_CHARACTERS[input[i + 2]?.toLowerCase()]
-    ) {
-      text += SPECIAL_CHARACTERS[input[i + 2].toLowerCase()]
-      i += 3
+    } else if (ch === '%' && input[i + 1] === '%' && PERCENT_CODE.test(input.slice(i, i + 5))) {
+      const [match, code] = input.slice(i, i + 5).match(PERCENT_CODE)
+      text += resolvePercentCode(match, code, () => true)
+      i += match.length
     } else {
       text += ch
       i += 1

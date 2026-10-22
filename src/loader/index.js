@@ -25,9 +25,6 @@ function decodeDataUri(uri) {
   return Base64.decode(payload)
 }
 
-const textControlCharactersRegex = /\\[AXQWOoLIpfH].*;/g
-const curlyBraces = /\\[{}]/g
-
 // DXF $INSUNITS code -> [full name, abbreviation]. The unit enum lives here (getUnitToMeter holds the
 // matching meter scale factor); consumers read the resolved unit off the returned `dxf.units`.
 const DXF_UNITS = {
@@ -286,7 +283,8 @@ class DXFLoader extends THREE.Loader {
         return console.warn('font parameter not set. Ignoring text entity.')
       }
 
-      //Note: We currently only support a single format applied to all the mtext text
+      //Note: We currently only support a single format applied to all the mtext text. With
+      // several paragraph alignments (\pxq) the last one is used for the whole entity.
       const { text, horizontalAlignment } = parseMText(entity.text)
       const style = {
         horizontalAlignment: horizontalAlignment || 'left',
@@ -655,7 +653,9 @@ class DXFLoader extends THREE.Loader {
         return console.warn('Text is not supported without TextGeometry')
       }
 
-      const content = parseText(entity.text)
+      // Typeface fonts often lack symbols like ⌀; keep the raw code rather than drop the character
+      const glyphs = font.data && font.data.glyphs
+      const content = parseText(entity.text, (ch) => !glyphs || ch in glyphs)
       geometry = new ThreeEx.TextGeometry(content, {
         font: font,
         height: 0,
